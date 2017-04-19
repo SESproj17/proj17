@@ -9,7 +9,7 @@ int main(int argc, char **argv) {
 	ROS_INFO("#WE_BEGAN");
 
 	grid* g = grid::getInstance();
-	vector<pathCell*> p = g->dijkstra(0,0,3,3);
+	vector<pathCell*> p = g->dijkstra(0,0,35,40);
 	cout << "length   " << p.size() << endl;
     Robot* robot = new Robot();
     // Start the movement
