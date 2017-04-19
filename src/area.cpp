@@ -1,6 +1,6 @@
 #include "area.h"
 
-area::area(vector<vector <int> > givenCells,float givenProb,int lvl) {
+area::area(vector<vector <pathCell*> > givenCells,float givenProb,int lvl) {
 	this->myCells = givenCells;
 	this->prob = givenProb;
 	this->myLevel = lvl;
