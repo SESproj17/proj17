@@ -29,6 +29,8 @@ public:
 	static grid* getInstance();
 	pathCell* getCellAt(int i,int j);
 	void print();
+	int getRows();
+	int getCols();
 	vector<pathCell*> dijkstra(int initI,int initJ,int goalI,int goalJ);
 
 };

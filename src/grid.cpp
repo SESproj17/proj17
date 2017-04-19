@@ -205,3 +205,5 @@ void grid::print() {
         cout << endl;
     }
 }
+int grid::getRows() { return this->rows; }
+int grid::getCols() { return this->cols; }
