@@ -133,11 +133,11 @@ void Robot::work(vector<pathCell*> path){
  }
 
 Robot::Robot(){
-	//robotState = idle;
-	//location = NULL;
+	robotState = idle;
+	location = NULL;
 }
 
-state Robot::getState() { return robotState;}
+state Robot::getState() { return this->robotState;}
 void setState(state s);
 //area getArea();
 //void setArea(Area area);
@@ -178,4 +178,12 @@ pathCell* Robot::getLocation(){
 void Robot::setPath(std::vector<pathCell*> newpath){
 	path = newpath;
 }
-
+/*
+void Robot:: action(){
+	if(this->robotState == traveling){
+		location = nextLocationInPath();
+		location->changeState();
+		myArea = location->
+		goToTheNextCell();
+	}
+}*/

@@ -4,6 +4,7 @@
 #include <ros/ros.h>
 #include <iostream>
 #include "cell.h"
+class area;
 
 
 class pathCell: public cell {
@@ -22,6 +23,7 @@ public:
 	float getCost();
 	void setLastPathCell(pathCell* lastOne);
 	vector<pathCell*> getNeighbors();
+	area* getArea();//todo...for sechiya
 };
 
 
