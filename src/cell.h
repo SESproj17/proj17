@@ -16,14 +16,15 @@ private:
 	State myState;
 
 public:
-	cell(myTuple* givenLocation,float givenProb,int givenId);
+	cell(myTuple* givenLocation,double givenProb,int givenId);
 	float getProb();
-	myTuple* getLocation();
+	myTuple getLocation();
 	bool imAlive();
 	int getId();
 	bool isEqual(cell* other);
 	State getState();
 	void changeState();
+	void setProb(float p);
 };
 
 

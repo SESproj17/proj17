@@ -5,6 +5,7 @@
 #include <ros/ros.h>
 #include <iostream>
 #include <vector>
+#include <nav_msgs/GetMap.h>
 #include "pathCell.h"
 
 
@@ -23,9 +24,10 @@ private:
 	
 	void reduceMap();
 	void initGrid();
-	void readMap();
+
 	grid();
 public:
+	void readMap(const nav_msgs::OccupancyGrid& map);
 	static grid* getInstance();
 	pathCell* getCellAt(int i,int j);
 	void print();

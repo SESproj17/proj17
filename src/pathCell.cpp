@@ -2,7 +2,13 @@
 #include "cell.h"
 
 pathCell::pathCell(myTuple* givenLocation,float givenProb,int givenId,float givenCost) : cell(givenLocation,givenProb,givenId) {
-	this->cost = givenCost;
+	ros::NodeHandle node;
+	float minCost;
+	if (givenCost == 0) { this->cost= 0;}
+	else {
+	 node.getParam("min_cost",minCost);
+	 this->cost = givenCost/minCost;
+	}
 	this->lastCell = NULL;
 
 }

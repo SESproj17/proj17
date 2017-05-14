@@ -13,11 +13,12 @@ private:
 	float prob;
 	int myLevel;
 	AreaState state;
-	//my robots.
+	
 public:
 	area(vector<vector <pathCell*> > givenCells,float givenProb,int lvl);
 	float getProb();
 	int getLevel();
+	pathCell* getCellAt(int i,int j);
 	void changeState(AreaState newState);
 	AreaState getState();
 	bool isCovered();

@@ -1,0 +1,15 @@
+material marker_0
+{
+  receive_shadows off
+  technique
+  {
+    pass
+    {
+      ambient 1.0 1.0 1.0 1.000000
+      texture_unit
+      {
+        texture MarkerData_2.png
+      }
+    }
+  }
+}
