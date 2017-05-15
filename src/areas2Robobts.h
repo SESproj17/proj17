@@ -23,7 +23,7 @@ private:
 	vector<vector<subArea*> >areas;
 	vector<subArea*> splitAreaBetweenHisrobots(subArea* area);
 	costedPath* min(vector<costedPath*> paths);
-	costedPath* findSafestPath(myTuple robiLocation, subArea* area);
+	costedPath* findSafestPath(myTuple* robiLocation, subArea* area);
 	float price(vector<pathCell*> path);
 	vector<vector<pathCell*> > graphPartition(vector<pathCell*>graph,int k);
 	vector<myTuple*> hungarianMethod(vector<vector<float> >costMatrix);

@@ -4,6 +4,7 @@
 #include "Robot.h"
 using namespace std;
 
+/******
 int main(int argc, char **argv) {
 	ros::init(argc, argv, "ses");
 	ROS_INFO("#WE_BEGAN");
@@ -27,7 +28,7 @@ int main(int argc, char **argv) {
     }*/
      //cout<<"hellllllllllllllllllllo!"<<endl;
 	
-
+/**
 	vector<pathCell*> p = g->dijkstra(0,0,4,4);    
 
 	cout << "length   " << p.size() << endl;
@@ -53,9 +54,9 @@ int main(int argc, char **argv) {
 	grid *g;
 	g =  grid::getInstance();
 	*/
-
+/**
 	return 0;
-}
+}*/
 
 
     

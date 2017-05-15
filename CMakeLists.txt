@@ -12,7 +12,9 @@ find_package(catkin REQUIRED COMPONENTS
   rospy
   std_msgs
   tf
+  message_generation
 )
+
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -48,11 +50,12 @@ find_package(catkin REQUIRED COMPONENTS
 ##   * add every package in MSG_DEP_SET to generate_messages(DEPENDENCIES ...)
 
 ## Generate messages in the 'msg' folder
-# add_message_files(
-#   FILES
-#   Message1.msg
-#   Message2.msg
-# )
+add_message_files(
+   FILES
+   RobotStatus.msg
+   step.msg
+   Path.msg
+)
 
 ## Generate services in the 'srv' folder
 # add_service_files(
@@ -69,10 +72,11 @@ find_package(catkin REQUIRED COMPONENTS
 # )
 
 ## Generate added messages and services with any dependencies listed here
-# generate_messages(
-#   DEPENDENCIES
-#   std_msgs
-# )
+ generate_messages(
+   DEPENDENCIES
+   std_msgs
+ )
+
 
 ################################################
 ## Declare ROS dynamic reconfigure parameters ##
@@ -106,7 +110,7 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES ses
-#  CATKIN_DEPENDS roscpp rospy std_msgs
+#  CATKIN_DEPENDS roscpp rospy std_msgs std_msgs message_runtime
 #  DEPENDS system_lib
 )
 
@@ -134,7 +138,10 @@ include_directories(
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
-add_executable(a_robot src/cell.cpp src/myTuple.cpp src/main.cpp src/pathCell.cpp src/grid.cpp src/area.cpp src/subArea.cpp src/Robot.cpp src/algo1.cpp src/areas2Robobts.cpp src/costedArea.cpp src/costedPath.cpp src/robot.cpp src/moveRobot.cpp src/SechiyaRobot.cpp)
+
+add_executable(robot src/cell.cpp src/myTuple.cpp src/main.cpp src/pathCell.cpp src/grid.cpp src/area.cpp src/subArea.cpp src/Robot.cpp src/algo1.cpp src/areas2Robobts.cpp src/costedArea.cpp src/costedPath.cpp src/robot.cpp src/moveRobot.cpp src/SechiyaRobot.cpp)
+
+add_executable(monitor src/monitor.cpp src/myTuple.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -147,10 +154,13 @@ add_executable(a_robot src/cell.cpp src/myTuple.cpp src/main.cpp src/pathCell.cp
 # add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
-target_link_libraries(ses
+target_link_libraries(robot
    ${catkin_LIBRARIES}
 )
 
+target_link_libraries(monitor
+  ${catkin_LIBRARIES}
+)
 #############
 ## Install ##
 #############

@@ -59,7 +59,7 @@ void areas2Robobts::allocate(){
 }
 
 
- costedPath* areas2Robobts::findSafestPath(myTuple robiLocation, subArea* area){
+ costedPath* areas2Robobts::findSafestPath(myTuple* robiLocation, subArea* area){
  	grid* g = grid::getInstance();
  	vector<costedPath*>costedPaths;
  	vector<pathCell*> cells = area->getCells();
@@ -68,7 +68,7 @@ void areas2Robobts::allocate(){
 		myTuple loc = cells[k]->getLocation();
 		int goalI = loc.returnFirst();
 		int goalJ = loc.returnSecond();
-		vector<pathCell*> path = g->dijkstra(robiLocation.returnFirst(),robiLocation.returnSecond(),goalI,goalJ);
+		vector<pathCell*> path = g->dijkstra(robiLocation->returnFirst(),robiLocation->returnSecond(),goalI,goalJ);
 		costedPath* cp = new costedPath(path, price(path)); 
 		costedPaths.push_back(cp);
 	}

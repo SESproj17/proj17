@@ -11,12 +11,11 @@
 #include "geometry_msgs/PoseWithCovarianceStamped.h"
 #include <string.h>
 #include <tf/transform_listener.h>
-#include <multi_sync/step.h>
-#include <multi_sync/Path.h>
+#include <ses/step.h>
+#include <ses/Path.h>
 
 using namespace std;
 enum Direction {RIGHT,UP,LEFT,DOWN};
-enum state {idle,traveling,covering,done,dead};
 
 
 class moveRobot 
@@ -27,7 +26,7 @@ public:
 	
 private:
 
-	ros::Subscriber poseSubscriber;//??
+	ros::Subscriber poseSubscriber;
 
 	ros::Publisher publisher;
 	ros::Subscriber path_sub;
@@ -36,7 +35,7 @@ private:
 
 
 	robot* me;
-	bool canMove = false;
+	bool canMove;
 	int robot_id;
 
 
@@ -52,12 +51,12 @@ private:
 
 	int newCounter;
 
-	void pathCallback(const multi_sync::Path::ConstPtr& path_msg);
+	void pathCallback(const ses::Path::ConstPtr& path_msg);
 	void publishStep();
 	void getPose();
 	void rotate(Direction d);
 	void step(Direction d);
-	void moveToNext(myTuple location, myTuple nextLocation);
+	void moveToNext(myTuple* location, myTuple* nextLocation);
 
 };
 

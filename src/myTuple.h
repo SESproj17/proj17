@@ -11,6 +11,7 @@ private:
 public:
 	myTuple(int givenX,int givenY);
 	int returnFirst();
+	bool equals(myTuple* other);
 	int returnSecond();
 };
 

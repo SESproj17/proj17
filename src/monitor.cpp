@@ -1,20 +1,19 @@
 
 #include "ros/ros.h"
-#include <multi_sync/RobotStatus.h>
-#include <multi_sync/step.h>
-#include <multi_sync/Path.h>
+#include <ses/RobotStatus.h>
+#include <ses/step.h>
+#include <ses/Path.h>
 #include "myTuple.h"
 using namespace std;
 
 #define MAX_ROBOTS_NUM 20
 
-enum State {idle,traveling,covering,done,dead};
+enum robotState {idle,traveling,covering,done,dead};
 
 unsigned int teamSize;
 unsigned int robotsCount = 0;
 bool robotsReady[MAX_ROBOTS_NUM];
 
-//grid* g = grid::getInstance();
 
 ros::Subscriber team_status_sub;
 ros::Publisher team_status_pub;
@@ -23,9 +22,9 @@ ros::Subscriber steps_sub;
 ros::Publisher path_pub;
 
 
-void teamStatusCallback(const multi_sync::RobotStatus::ConstPtr& status_msg);
-void stepCallback(const multi_sync::step::ConstPtr& step_msg);
-void publishPath(State state, string path, string area, int robot_id);
+void teamStatusCallback(const ses::RobotStatus::ConstPtr& status_msg);
+void stepCallback(const ses::step::ConstPtr& step_msg);
+void publishPath(robotState state, string path, string area, int robot_id);
 
 
 int main(int argc, char **argv)
@@ -48,10 +47,10 @@ int main(int argc, char **argv)
 	ros::init(argc, argv, "monitor");
 	ros::NodeHandle nh;
 
-	team_status_pub = nh.advertise<multi_sync::RobotStatus>("team_status", 10);
+	team_status_pub = nh.advertise<ses::RobotStatus>("team_status", 10);
 	team_status_sub = nh.subscribe("team_status", 1, &teamStatusCallback);
 
-	path_pub = nh.advertise<multi_sync::Path>("paths", 10);
+	path_pub = nh.advertise<ses::Path>("paths", 10);
 	steps_sub = nh.subscribe("steps", 1, &stepCallback);
 
 
@@ -61,7 +60,7 @@ int main(int argc, char **argv)
 }
 
 
-void teamStatusCallback(const multi_sync::RobotStatus::ConstPtr& status_msg)
+void teamStatusCallback(const ses::RobotStatus::ConstPtr& status_msg)
 {
 	int robot_id = status_msg->robot_id;
 	if (!robotsReady[robot_id]) {
@@ -72,7 +71,7 @@ void teamStatusCallback(const multi_sync::RobotStatus::ConstPtr& status_msg)
 		if (robotsCount == teamSize) {
 			ROS_INFO("All robots GO!");
 
-			multi_sync::RobotStatus status_msg;
+			ses::RobotStatus status_msg;
 
 			status_msg.header.stamp = ros::Time::now();
 			status_msg.header.frame_id = "monitor";
@@ -82,8 +81,8 @@ void teamStatusCallback(const multi_sync::RobotStatus::ConstPtr& status_msg)
 }
 
 
-void publishPath(int robot_id,State state, string path, string area){
-	multi_sync::Path path_msg;
+void publishPath(int robot_id,robotState state, string path, string area){
+	ses::Path path_msg;
 
 	//path_msg.header.stamp = ros::Time::now();
 	path_msg.robot_id = robot_id;
@@ -96,13 +95,13 @@ void publishPath(int robot_id,State state, string path, string area){
 }
 
 
-void stepCallback(const multi_sync::step::ConstPtr& step_msg){
+void stepCallback(const ses::step::ConstPtr& step_msg){
 
 	cout<<"monitor catched a step"<<endl;
 
 	int robot_id = step_msg->robot_id;
-	State state = (State)step_msg->state;
-	myTuple location(step_msg->first_location, step_msg->first_location);
+	robotState state = (robotState)step_msg->state;
+	myTuple* location = new myTuple(step_msg->first_location, step_msg->first_location);
 
 	//publish only if the status changed!
 	if(state == idle || state == done){

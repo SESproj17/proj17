@@ -5,27 +5,31 @@
 #include <ros/ros.h>
 #include <iostream>
 #include <string>
-#include "myTuple.h"
+#include "subArea.h"
 
 using namespace std; 
 
-enum State {idle,traveling,covering,done,dead};
+enum robotState {idle,traveling,covering,done,dead};
 
 class robot 
 {
 public:
 	robot(int first, int second);
-	void setPath(string path);
-	void setState(State state);
-	void setArea(string area);
-	State getState();
-	myTuple getLocation();
+	void setStrPath(string path);
+	void setPath(vector<pathCell*> path);
+	void setState(robotState state);
+	void setStrArea(string area);
+	void setArea(subArea*);
+	void setLocation(myTuple* newTuple);
+	robotState getState();
+	myTuple* getLocation();
+	vector<myTuple*> getPath();
 	bool isTheLast();
 	string getArea();
 private:
-	myTuple location;
+	myTuple* location;
 	vector <myTuple*> path; 
-	State state;
+	robotState state;
 	string area;
 
 	vector<string> split(const string &s, char delim);

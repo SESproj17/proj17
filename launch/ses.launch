@@ -1,7 +1,13 @@
 <launch>
         <param name="/use_sim_time" value="true" />
         <param name="min_cost" value="0.1" />
+        <param name="group_size" value="1" />
+
+
+
 	<arg name="map_file" default="$(find ses)/world/labs.yaml"/>
+
+
 	<node name="map_server_real" pkg="map_server" type="map_server" args="$(arg map_file)">
 		<remap from="map" to="threat_map"/>
 		<remap from="map_metadata" to="threat_map_metadata"/>
@@ -12,11 +18,18 @@
 	<env name="GAZEBO_MODEL_PATH" value="$(find ses)/models:$(find ses)/models/ar_markers:$(optenv GAZEBO_MODEL_PATH)"/>
 	<env name="GAZEBO_RESOURCE_PATH" value="$(find ses):$(optenv GAZEBO_MODEL_PATH)"/>
 
+
+
 	 <node name="tf" pkg="tf" type="static_transform_publisher" args="6.193991 8.069164 0.039000 0 0.000002 0 /map /lizi_1/diff_driver/odometry 100" />
 
+
+
         <include file="$(find ric_gazebo)/launch/lizi_gazebo.launch"/>
+
+
 	
-	<node name="ses" pkg="ses" type="ses" output="screen"/>
-	<!--node name="monitor" pkg="multi_sync" type="monitor" args="1" output="screen"/--> 
-  	<!--node name="move_robot_0" pkg="multi_sync" type="move_robot_sync" args="0 0 0" output="screen"/--> 
+	<!--node name="ses" pkg="ses" type="ses" output="screen"/-->
+	<node name="robot_0" pkg="ses" type="robot" args="0 0 0" output="screen"/> 
+  	<node name="monitor" pkg="multi_sync" type="monitor" args="1" output="screen"/> 
+	
 </launch>

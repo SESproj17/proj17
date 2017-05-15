@@ -1,27 +1,24 @@
 #include "moveRobot.h"
 
 
-void pathCallback(const multi_sync::Path::ConstPtr& path_msg);
-
-
-
 moveRobot::moveRobot(int firstStart, int secondStart, int robot_id){
+	canMove = false;
 	ros::NodeHandle  nh;
 	publisher  = nh.advertise<geometry_msgs::Twist>("/lizi_1/diff_driver/command", 10);	
-	steps_pub = nh.advertise<multi_sync::step>("steps", 10);
-	path_sub = nh.subscribe("paths", 1, &pathCallback);
+	steps_pub = nh.advertise<ses::step>("steps", 10);
+	path_sub = nh.subscribe("paths", 1, &moveRobot::pathCallback, this);
 	me = new robot(firstStart, secondStart);
 	robot_id = robot_id;
 }
 	
 
 
-void moveRobot::pathCallback(const multi_sync::Path::ConstPtr& path_msg){
+void moveRobot::pathCallback(const ses::Path::ConstPtr& path_msg){
 	if(robot_id == path_msg->robot_id){
-		me->setState((State)path_msg->state);
-		me->setPath(path_msg->path);
-		me->setArea(path_msg->area);
-		if(me->state = dead){cout<<"robot "<<robot_id<<" died, so we became sad"<<endl;exit(1);}
+		me->setState((robotState)path_msg->state);
+		me->setStrPath(path_msg->path);
+		me->setStrArea(path_msg->area);
+		if(me->getState() == (robotState)dead){cout<<"robot "<<robot_id<<" died, so we became sad"<<endl;exit(1);}
 		canMove = true;
 
 	}
@@ -30,12 +27,12 @@ void moveRobot::pathCallback(const multi_sync::Path::ConstPtr& path_msg){
 
 void moveRobot::publishStep(){
 	
-	multi_sync::step step_msg;
+	ses::step step_msg;
 
 	step_msg.robot_id = robot_id;
 	step_msg.state = me->getState();
-	step_msg.first_location = me->getLocation().returnFirst();
-	step_msg.second_location = me->getLocation().returnSecond();
+	step_msg.first_location = me->getLocation()->returnFirst();
+	step_msg.second_location = me->getLocation()->returnSecond();
 	step_msg.is_the_last = me->isTheLast();
 	step_msg.area = me->getArea();
 	
@@ -51,9 +48,9 @@ void moveRobot::start(){
 
 	while (true) {
 		if(canMove){
-			vector<myTuple> path = me->getPath();
+			vector<myTuple*> path = me->getPath();
 			int size = path.size();
-			if(path[size-1] == me->getLocation() && size>1){
+			if(path[size-1]->equals(me->getLocation())  && size>1){
 				me->setLocation(path[size-1]);
 				moveToNext(path[size-1], path[size-2]);
 				path.erase(path.end());
@@ -208,15 +205,15 @@ void moveRobot::getPose() {
 }
 
 
- void moveRobot::moveToNext(myTuple location, myTuple nextLocation){
+ void moveRobot::moveToNext(myTuple* location, myTuple* nextLocation){
  	Direction d;
- 	if (location.returnFirst() == nextLocation.returnFirst() && location.returnSecond() > nextLocation.returnSecond()) {
+ 	if (location->returnFirst() == nextLocation->returnFirst() && location->returnSecond() > nextLocation->returnSecond()) {
  		d = LEFT;
-	} else if (location.returnFirst() == nextLocation.returnFirst() && location.returnSecond() < nextLocation.returnSecond()) {
+	} else if (location->returnFirst() == nextLocation->returnFirst() && location->returnSecond() < nextLocation->returnSecond()) {
 		d = RIGHT;
-	} else if (location.returnFirst() > nextLocation.returnFirst() && location.returnSecond() == nextLocation.returnSecond()) {
+	} else if (location->returnFirst() > nextLocation->returnFirst() && location->returnSecond() == nextLocation->returnSecond()) {
 		d = UP;	
-	} else if (location.returnFirst() < nextLocation.returnFirst() && location.returnSecond() == nextLocation.returnSecond()) {
+	} else if (location->returnFirst() < nextLocation->returnFirst() && location->returnSecond() == nextLocation->returnSecond()) {
 		d = DOWN;						
 	}
 	cout << "DIR " << d <<endl;

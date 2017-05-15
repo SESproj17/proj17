@@ -4,16 +4,28 @@
 #include <string>
 
 using namespace std;
+void robot::setLocation(myTuple* newTuple) {
+	this->location = newTuple;
+}
 
 
-/////where in this file we erase????
-robot::robot(int first, int second): location(myTuple m(first,second)){
-	cout<<"at constructor!";
+
+vector<myTuple*> robot::getPath(){
+
+}
+robot::robot(int first, int second){
+
+	location = new myTuple(first,second);
 	this->state = idle;
 
 }
 
-void robot::setPath(string path){
+void robot::setPath(vector<pathCell*> path){
+	string strPath;
+	setStrPath(strPath);
+}
+
+void robot::setStrPath(string path){
 	vector<string> spath = split(path, ' ');
 	this->path.resize(spath.size());
 	for (int i = 0; i < spath.size(); ++i)
@@ -24,18 +36,23 @@ void robot::setPath(string path){
 	//reverse it
 }
 
-void robot::setArea(string area){
+void robot::setStrArea(string area){
 	this->area = area;
 }
 
-void robot::setState(State state){
+void robot::setArea(subArea*){
+	string area;
+	setStrArea(area);
+}
+
+void robot::setState(robotState state){
 	this->state = state;
 }
 
-State robot::getState(){
+robotState robot::getState(){
 	return this->state;
 }
-myTuple robot::getLocation(){
+myTuple* robot::getLocation(){
 	return this->location;
 }
 bool robot::isTheLast(){
