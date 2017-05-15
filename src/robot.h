@@ -28,7 +28,7 @@ public:
 	string getArea();
 private:
 	myTuple* location;
-	vector <myTuple*> path; 
+	vector<myTuple*> path; 
 	robotState state;
 	string area;
 

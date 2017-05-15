@@ -29,7 +29,7 @@ void publishPath(robotState state, string path, string area, int robot_id);
 
 int main(int argc, char **argv)
 {
-	
+	 cout<<"are you dying???"<<endl;
 	if (argc < 2) {
 		ROS_ERROR("You must specify team size.");
 		return -1;

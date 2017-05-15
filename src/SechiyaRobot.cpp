@@ -1,7 +1,7 @@
 
 #include <iostream>
 #include <ros/ros.h>
-#include <ses/RobotStatus.h>
+#include "RobotStatus.h"
 #include "moveRobot.h"
 using namespace std;
 
@@ -19,7 +19,7 @@ void waitForTeam();
 
 int main(int argc, char **argv)
 {
-
+    cout<<"gjhy" << endl;
 
     if (argc < 2) {
         ROS_ERROR("You must specify robot id.");
@@ -30,7 +30,7 @@ int main(int argc, char **argv)
     robot_id = atoi(id);
 
 
-    string node_name = "Robot_nu._";
+    string node_name = "Robot_";
     node_name += id;
 
 
@@ -44,6 +44,9 @@ int main(int argc, char **argv)
     ros::init(argc, argv, node_name);
     ros::NodeHandle nh;
 
+    team_status_pub = nh.advertise<ses::RobotStatus>("team_status", 10);
+    team_status_sub = nh.subscribe("team_status", 1, &teamStatusCallback);
+
 
 
     nh.getParam("group_size",MAX_ROBOTS_NUM);
@@ -52,12 +55,7 @@ int main(int argc, char **argv)
         ROS_ERROR("The robot's ID must be an integer number between 0 an 19");
         return -1;
     }
-    ROS_INFO("Starting robot %d", robot_id);
-
-    // Create a unique node name
-
-
-
+    ROS_INFO("Starting robot %d??", robot_id);
 
     publishReadyStatus();
 
@@ -84,6 +82,7 @@ void teamStatusCallback(const ses::RobotStatus::ConstPtr& status_msg)
 
 void publishReadyStatus()
 {
+     cout<<"why are you dying???"<<endl;
     ses::RobotStatus status_msg;
 
     status_msg.header.stamp = ros::Time::now();

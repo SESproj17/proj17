@@ -11,7 +11,7 @@ void robot::setLocation(myTuple* newTuple) {
 
 
 vector<myTuple*> robot::getPath(){
-
+	return this->path;
 }
 robot::robot(int first, int second){
 
@@ -26,6 +26,7 @@ void robot::setPath(vector<pathCell*> path){
 }
 
 void robot::setStrPath(string path){
+
 	vector<string> spath = split(path, ' ');
 	this->path.resize(spath.size());
 	for (int i = 0; i < spath.size(); ++i)
@@ -56,7 +57,7 @@ myTuple* robot::getLocation(){
 	return this->location;
 }
 bool robot::isTheLast(){
-	this->path.size()==0;
+	return this->path.size()==0;
 }
 
 string robot::getArea(){

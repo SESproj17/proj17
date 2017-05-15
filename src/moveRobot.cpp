@@ -47,13 +47,17 @@ void moveRobot::start(){
 	publishStep();
 
 	while (true) {
+		ros::spinOnce();
 		if(canMove){
 			vector<myTuple*> path = me->getPath();
+			std::reverse(path.begin(),path.end());
 			int size = path.size();
-			if(path[size-1]->equals(me->getLocation())  && size>1){
-				me->setLocation(path[size-1]);
-				moveToNext(path[size-1], path[size-2]);
-				path.erase(path.end());
+			if(size>1 && path[0]->equals(me->getLocation())){
+				cout << "start Moving bla bla bla  " << endl;
+				me->setLocation(path[1]);
+				moveToNext(path[0], path[1]);
+				path.erase(path.begin());
+				cout<<path.size()<<endl;
 				publishStep();
 			}
 

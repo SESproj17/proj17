@@ -1,2 +1,0 @@
-multi_sync
--DCATKIN_DEVEL_PREFIX=/home/lizi/msgs/devel -DCMAKE_INSTALL_PREFIX=/home/lizi/msgs/install -G Unix Makefiles
