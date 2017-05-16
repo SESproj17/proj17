@@ -6,6 +6,8 @@
 #include <ses/Path.h>
 #include "grid.h"
 #include "myTuple.h"
+//#include "areas2Robobts.h"
+#include "costedArea.h"
 using namespace std;
 
 #define MAX_ROBOTS_NUM 20
@@ -15,6 +17,8 @@ enum robotState {idle,traveling,covering,done,dead};
 unsigned int teamSize;
 unsigned int robotsCount = 0;
 bool robotsReady[MAX_ROBOTS_NUM];
+vector<int> team;
+map<int, costedArea*> assignment;
 
 
 ros::Subscriber team_status_sub;
@@ -72,6 +76,7 @@ void teamStatusCallback(const ses::RobotStatus::ConstPtr& status_msg)
 		ROS_INFO("Robot %d is ready!\n", robot_id);
 		robotsReady[robot_id] = true;
 		robotsCount++;
+		team.push_back(robot_id);
 
 		if (robotsCount == teamSize) {
 			ROS_INFO("All robots GO!");
@@ -115,7 +120,6 @@ void stepCallback(const ses::step::ConstPtr& step_msg){
 		//allocateNextArea(?);
 		string newArea = "a area";
 		string newPath = "0,0 0,1 1,1 1,2 2,2 2,3 3,3";
-		//string newPath = makePath(g->dijkstra(location.returnFirst(),location.returnSecond()));
 		publishPath(robot_id,traveling,newPath,newArea);
 	}else{
 		c->changeState();
@@ -158,7 +162,8 @@ void preProssesing(){
     algo1* al = new algo1();
     vector<area*> vc = al->make_areas(0.1,0.4);
     vector<vector<subArea*> > subAreas = al->getConnectedAreas(vc);
-    area2robots* assingment = new area2robots(subAreas, robotsReady);
-
+    areas2Robobts* assigner = new areas2Robobts(subAreas, team);
+    assignment = assigner.allocate();
 }
+
 

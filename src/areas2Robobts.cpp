@@ -7,8 +7,8 @@ struct myclass {
   { return (first->getCost() < second->getCost());}
 } compByCost;
 
-areas2Robobts::areas2Robobts(vector<vector<subArea*> >givenConnectedAreas,vector<int>idsOfTeam){
-	team = givenTeam;
+areas2Robobts::areas2Robobts(vector<vector<subArea*> >givenConnectedAreas,vector<int> idsOfTeam){
+	team = idsOfTeam;
 	areas = givenConnectedAreas;
 }
 
