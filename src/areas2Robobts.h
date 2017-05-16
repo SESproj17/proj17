@@ -19,7 +19,8 @@
 class areas2Robobts{
 private:
 	const static int D = 4;// as the article request
-	vector<robot*>team;
+	vector<int> team;
+	map<int, costedArea*> assignment;
 	vector<vector<subArea*> >areas;
 	vector<subArea*> splitAreaBetweenHisrobots(subArea* area);
 	costedPath* min(vector<costedPath*> paths);
@@ -32,8 +33,8 @@ private:
 	
 public: 
 	areas2Robobts(vector<vector<subArea*> >givenConnectedAreas,
-					vector<robot*>givenTeam);
-	void allocate();
+					vector<int>idsOfTeam);
+	map<int, costedArea*> allocate();
 	
 };
 

@@ -80,3 +80,8 @@ vector<string> robot::split(const string &s, char delim) {
     }
     return tokens;
 }
+
+void robot::move(){
+	this->path.erase(this->path.begin());
+	this->location = path[0];
+}

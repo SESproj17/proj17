@@ -7,8 +7,31 @@ moveRobot::moveRobot(int firstStart, int secondStart, int robot_id){
 	publisher  = nh.advertise<geometry_msgs::Twist>("/lizi_1/diff_driver/command", 10);	
 	steps_pub = nh.advertise<ses::step>("steps", 10);
 	path_sub = nh.subscribe("paths", 1, &moveRobot::pathCallback, this);
+	laserSub = nh.subscribe("scan", 1, &moveRobot::scanCallback, this);
 	me = new robot(firstStart, secondStart);
 	robot_id = robot_id;
+}
+
+// Process the incoming laser scan message
+void moveRobot::scanCallback(const sensor_msgs::LaserScan::ConstPtr& scan)
+{
+	bool isObstacleInFront = false;
+
+    // Find the closest range between the defined minimum and maximum angles
+    int minIndex = ceil((MIN_SCAN_ANGLE - scan->angle_min) / scan->angle_increment);
+    int maxIndex = floor((MAX_SCAN_ANGLE - scan->angle_min) / scan->angle_increment);
+
+    for (int currIndex = minIndex + 1; currIndex <= maxIndex; currIndex++) {
+        if (scan->ranges[currIndex] < MIN_DIST_FROM_OBSTACLE) {
+        	isObstacleInFront = true;
+            break;
+        }
+    }
+
+    if (isObstacleInFront) {
+        ROS_INFO("Stop!");
+        canMove = false;
+    }
 }
 	
 
@@ -43,24 +66,26 @@ void moveRobot::publishStep(){
 	ROS_INFO("Robot %d published on %d,%d step", robot_id, step_msg.first_location, step_msg.second_location);
 }
 
+
 void moveRobot::start(){
 	publishStep();
-
 	while (true) {
 		ros::spinOnce();
 		if(canMove){
 			vector<myTuple*> path = me->getPath();
-			std::reverse(path.begin(),path.end());
 			int size = path.size();
-			if(size>1 && path[0]->equals(me->getLocation())){
-				cout << "start Moving bla bla bla  " << endl;
-				me->setLocation(path[1]);
-				moveToNext(path[0], path[1]);
-				path.erase(path.begin());
-				cout<<path.size()<<endl;
-				publishStep();
-			}
 
+			if(size>1 && path[0]->returnFirst()== me->getLocation()->returnFirst() && path[0]->returnSecond()== me->getLocation()->returnSecond()){
+		
+				cout<<"location: "<<me->getLocation()->returnFirst()<<"."<<me->getLocation()->returnSecond()<<endl;
+				me->move();
+				cout<<"nlocation: "<<me->getLocation()->returnFirst()<<"."<<me->getLocation()->returnSecond()<<endl;
+				moveToNext(path[0], path[1]);
+				publishStep();
+				ros::spinOnce();
+			}else{
+				canMove = false;
+			}
 		}
 	}
 }

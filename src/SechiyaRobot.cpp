@@ -1,7 +1,7 @@
 
 #include <iostream>
 #include <ros/ros.h>
-#include "RobotStatus.h"
+#include <ses/RobotStatus.h>
 #include "moveRobot.h"
 using namespace std;
 
@@ -98,12 +98,15 @@ void publishReadyStatus()
 
 void waitForTeam()
 {
+    int count = 0;
     ros::Rate loopRate(1);
 
     // Wait until all robots are ready...
     while (!teamReady) {
         ROS_INFO("Robot %d: waiting for team", robot_id);
         ros::spinOnce();
+        if (count == 5) {publishReadyStatus(); count = 0;}
+        count++;
         loopRate.sleep();
     }
 }

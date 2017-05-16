@@ -9,6 +9,7 @@ int main(int argc, char **argv) {
 	ros::init(argc, argv, "ses");
 	ROS_INFO("#WE_BEGAN");
 
+
 	grid* g = grid::getInstance();
 	
 	/*

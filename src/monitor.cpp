@@ -2,7 +2,9 @@
 #include "ros/ros.h"
 #include <ses/RobotStatus.h>
 #include <ses/step.h>
+#include "algo1.h"
 #include <ses/Path.h>
+#include "grid.h"
 #include "myTuple.h"
 using namespace std;
 
@@ -21,7 +23,7 @@ ros::Publisher team_status_pub;
 ros::Subscriber steps_sub;
 ros::Publisher path_pub;
 
-
+void preProssesing();
 void teamStatusCallback(const ses::RobotStatus::ConstPtr& status_msg);
 void stepCallback(const ses::step::ConstPtr& step_msg);
 void publishPath(robotState state, string path, string area, int robot_id);
@@ -44,9 +46,12 @@ int main(int argc, char **argv)
 	    return -1;
 	}
 
+	
+
 	ros::init(argc, argv, "monitor");
 	ros::NodeHandle nh;
 
+	preProssesing();
 	team_status_pub = nh.advertise<ses::RobotStatus>("team_status", 10);
 	team_status_sub = nh.subscribe("team_status", 1, &teamStatusCallback);
 
@@ -101,7 +106,9 @@ void stepCallback(const ses::step::ConstPtr& step_msg){
 
 	int robot_id = step_msg->robot_id;
 	robotState state = (robotState)step_msg->state;
-	myTuple* location = new myTuple(step_msg->first_location, step_msg->first_location);
+	grid* g = grid::getInstance();
+	pathCell* c = g->getCellAt(step_msg->first_location, step_msg->first_location);
+	
 
 	//publish only if the status changed!
 	if(state == idle || state == done){
@@ -110,9 +117,10 @@ void stepCallback(const ses::step::ConstPtr& step_msg){
 		string newPath = "0,0 0,1 1,1 1,2 2,2 2,3 3,3";
 		//string newPath = makePath(g->dijkstra(location.returnFirst(),location.returnSecond()));
 		publishPath(robot_id,traveling,newPath,newArea);
-	}/*else{
-		markAsVisited(location);
-		if(hitBy(location)){
+	}else{
+		c->changeState();
+		/*
+		if(hitBy(c)){
 			bury(robot_id);//?
 			a->setState(unAssinged);
 			reallocate(step_msg->area);
@@ -125,7 +133,7 @@ void stepCallback(const ses::step::ConstPtr& step_msg){
 				a->setState(completed);
 			}
 			if(step_msg->is_the_last){ //robi found his area
-				publishPath(robot_id,covering,areaCoverage(location,step_msg->area),step_msg->area);
+				publishPath(robot_id,covering,areaCoverage(c,step_msg->area),step_msg->area);
 			}
 		}else if(state == covering){
 			if(step_msg->is_the_last){//robi finished to cover his area
@@ -136,9 +144,21 @@ void stepCallback(const ses::step::ConstPtr& step_msg){
 				publishPath(robot_id,travling,newPath,newArea);
 			}
 		}
-	}	*/
+	*/}
 }
 
-//string makePath(vector<pathCell*>){
-//	return ;
-//}
+/*
+bool hitBy(pathCell* location){//??????????????????
+	grid* g = grid::getInstance();
+	pathCell* c = g->getCellAt(location->returnFirst(),location->returnSecond());
+	return c->getProb()<1;//?
+}*/
+
+void preProssesing(){
+    algo1* al = new algo1();
+    vector<area*> vc = al->make_areas(0.1,0.4);
+    vector<vector<subArea*> > subAreas = al->getConnectedAreas(vc);
+    area2robots* assingment = new area2robots(subAreas, robotsReady);
+
+}
+

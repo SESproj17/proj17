@@ -7,12 +7,12 @@ struct myclass {
   { return (first->getCost() < second->getCost());}
 } compByCost;
 
-areas2Robobts::areas2Robobts(vector<vector<subArea*> >givenConnectedAreas,vector<robot*>givenTeam){
+areas2Robobts::areas2Robobts(vector<vector<subArea*> >givenConnectedAreas,vector<int>idsOfTeam){
 	team = givenTeam;
 	areas = givenConnectedAreas;
 }
 
-void areas2Robobts::allocate(){
+map<int, costedArea*> areas2Robobts::allocate(){
 	
 	vector<subArea*> safests = areas[0];
 	vector<int>remove;

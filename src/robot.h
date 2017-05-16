@@ -26,6 +26,7 @@ public:
 	vector<myTuple*> getPath();
 	bool isTheLast();
 	string getArea();
+	void move();
 private:
 	myTuple* location;
 	vector<myTuple*> path; 
