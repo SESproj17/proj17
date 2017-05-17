@@ -139,9 +139,9 @@ include_directories(
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
 
-add_executable(robot src/cell.cpp src/myTuple.cpp src/main.cpp src/pathCell.cpp src/grid.cpp src/area.cpp src/subArea.cpp src/Robot.cpp src/algo1.cpp src/areas2Robobts.cpp src/costedArea.cpp src/costedPath.cpp src/robot.cpp src/moveRobot.cpp src/SechiyaRobot.cpp)
+add_executable(robot src/Robot/moveRobot.cpp src/Robot/robot.cpp src/Robot/SechiyaRobot.cpp)
 
-add_executable(monitor src/monitor.cpp src/myTuple.cpp src/pathCell.cpp src/algo1.cpp src/cell.cpp src/grid.cpp)
+add_executable(monitor src/planner/algo1.cpp  src/planner/area.cpp  src/planner/areas2Robobts.cpp src/planner/cell.cpp src/planner/costedArea.cpp src/planner/costedPath.cpp src/planner/grid.cpp src/planner/monitor.cpp src/planner/myTuple.cpp src/planner/pathCell.cpp src/planner/subArea.cpp)
 
 
 

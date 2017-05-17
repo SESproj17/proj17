@@ -28,8 +28,8 @@
 
 
 	
-	<!--node name="ses" pkg="ses" type="ses" output="screen"/-->
-	<node name="Robot_0" pkg="ses" type="robot" args="0 0 0" output="screen"/> 
-  	<node name="monitor" pkg="ses" type="monitor" args="1" output="screen"/> 
+	<node name="ses" pkg="ses" type="ses" output="screen"/>
+	<!--node name="Robot_0" pkg="Robot" type="robot" args="0 0 0" output="screen"/--> 
+  	<!--node name="monitor" pkg="planner" type="monitor" args="1" output="screen"/--> 
 	
 </launch>
