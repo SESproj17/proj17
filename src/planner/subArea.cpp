@@ -15,15 +15,17 @@ subArea::subArea(vector<vector <pathCell*> > givenCells,float givenProb,int lvl)
             }
         }
     }
+    this->unvisited = this->cells.size();
 }
 
+/*
 subArea::subArea(vector<pathCell* > newCells,float givenProb,int lvl){
     this->prob = givenProb;
     this->myLevel = lvl;
     this->state = NotAssigned;
     this->cells = newCells;
 
-}
+}(*/
 
 vector<pathCell*> subArea::getCells(){
     return this->cells;
@@ -45,3 +47,9 @@ float subArea::getProb() {return this->prob;}
 int subArea::getLevel() {return this->myLevel;}
 void subArea::changeState(AreaState newState) { this->state = newState; }
 AreaState subArea::getState() {return this->state;}
+
+void subArea::notifyVisitedCell(){
+    unvisited--;
+    if (unvisited == 0){this->state = Covered;}
+}
+

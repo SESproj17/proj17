@@ -30,3 +30,8 @@ void pathCell::addNeighbors(pathCell* neigh) {
 }
 
 vector<pathCell*> pathCell::getNeighbors() { return this->neighbors;}
+
+/*
+void pathCell::setArea(subArea* givenArea){
+	this->area = givenArea;
+}*/

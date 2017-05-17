@@ -4,12 +4,12 @@
 #include <ses/step.h>
 #include <sstream>
 #include <string.h>
-#include "algo1.h"
 #include <ses/Path.h>
 #include "grid.h"
 #include "myTuple.h"
-#include "areas2Robobts.h"
-#include "costedArea.h"
+#include "pathCell.h"
+#include "allocation.h"
+
 using namespace std;
 
 #define MAX_ROBOTS_NUM 20
@@ -19,10 +19,9 @@ enum robotState {idle,traveling,covering,done,dead};
 unsigned int teamSize;
 unsigned int robotsCount = 0;
 bool robotsReady[MAX_ROBOTS_NUM];
-vector<costedArea*> assignment;
-vector<vector<subArea*> > areas;
 vector<int> ids;
 vector<myTuple*> locs;
+allocation* al;
 
 
 ros::Subscriber team_status_sub;
@@ -32,7 +31,6 @@ ros::Subscriber steps_sub;
 ros::Publisher path_pub;
 
 void preProssesing();
-string area2str(subArea* area);
 string path2str(vector<pathCell*> path);
 void teamStatusCallback(const ses::RobotStatus::ConstPtr& status_msg);
 void stepCallback(const ses::step::ConstPtr& step_msg);
@@ -41,7 +39,6 @@ void publishPath(robotState state, string path, string area, int robot_id);
 
 int main(int argc, char **argv)
 {
-	 cout<<"are you dying???"<<endl;
 	if (argc < 2) {
 		ROS_ERROR("You must specify team size.");
 		return -1;
@@ -56,12 +53,9 @@ int main(int argc, char **argv)
 	    return -1;
 	}
 
-	
-
 	ros::init(argc, argv, "monitor");
 	ros::NodeHandle nh;
 
-	preProssesing();
 	team_status_pub = nh.advertise<ses::RobotStatus>("team_status", 10);
 	team_status_sub = nh.subscribe("team_status", 1, &teamStatusCallback);
 
@@ -85,15 +79,15 @@ void teamStatusCallback(const ses::RobotStatus::ConstPtr& status_msg)
 		robotsReady[robot_id] = true;
 		robotsCount++;
 		ids.push_back(robot_id);
+		cout<<"callBack: number of robots: "<<ids.size()<<endl;
 		locs.push_back (new myTuple(x,y));
 		
-		preProssesing();
-
 		if (robotsCount == teamSize) {
 			ROS_INFO("All robots GO!");
 
-			ses::RobotStatus status_msg;
+		 	al = new allocation(ids,locs);
 
+			ses::RobotStatus status_msg;
 			status_msg.header.stamp = ros::Time::now();
 			status_msg.header.frame_id = "monitor";
 			team_status_pub.publish(status_msg);
@@ -102,14 +96,13 @@ void teamStatusCallback(const ses::RobotStatus::ConstPtr& status_msg)
 }
 
 
-void publishPath(int robot_id,robotState state, string path, string area){
+void publishPath(int robot_id,robotState state, string path){
 	ses::Path path_msg;
 
 	//path_msg.header.stamp = ros::Time::now();
 	path_msg.robot_id = robot_id;
 	path_msg.path = path;
 	path_msg.state = state;
-	path_msg.area = area;
 	
 	sleep(1.0);
 	path_pub.publish(path_msg);
@@ -124,77 +117,47 @@ void stepCallback(const ses::step::ConstPtr& step_msg){
 	robotState state = (robotState)step_msg->state;
 	grid* g = grid::getInstance();
 	pathCell* c = g->getCellAt(step_msg->first_location, step_msg->first_location);
-	
-
 	//publish only if the status changed!
 	if(state == idle || state == done){
-		//allocateNextArea(?);
-		string newArea = area2str(assignment[robot_id]->getArea());
-		string newPath = path2str(assignment[robot_id]->getPath());
-		publishPath(robot_id,traveling,newPath,newArea);
-	}else{
-		c->changeState();
-		//if(!(c->imAlive()){
-			
-		//}
-		/*
-		if(hitBy(c)){
-			bury(robot_id);//?
-			a->setState(unAssinged);
-			reallocate(step_msg->area);
-			publishPath(robot_id,dead, NULL,NULL);
-			//return;
+		string newPath = path2str(al->allocateNextArea(robot_id));
+		publishPath(robot_id,traveling,newPath);
+		return;
+	}
+	c->changeState();
+	if(!(c->imAlive())){
+		//set c as obstacle
+		al->bury(robot_id);
+		publishPath(robot_id,dead, "wait for Resurrection");
+		return;
+	}
+
+	if(step_msg->is_the_last){
+		if(state == traveling){//robi found his area
+			string newPath = path2str(al->areaCoverage(c,robot_id));
+			publishPath(robot_id,covering,newPath);
+			return;
 		}
-		if(state == traveling){
-			subArea* a;// = area that contain c(current cell)
-			if(/*all cells in a covered*//*){
-				a->setState(completed);
-			}
-			if(step_msg->is_the_last){ //robi found his area
-				publishPath(robot_id,covering,areaCoverage(c,step_msg->area),step_msg->area);
-			}
-		}else if(state == covering){
-			if(step_msg->is_the_last){//robi finished to cover his area
-				a->setState(completed);
-				allocateNextArea(?);
-				newArea
-				newPath
-				publishPath(robot_id,travling,newPath,newArea);
-			}
+		if(state == covering){//robi finished to cover his area
+			string newPath = path2str(al->allocateNextArea(robot_id));
+			publishPath(robot_id,traveling,newPath);
 		}
-	*/}
-}
-
-/*
-bool hitBy(pathCell* location){//??????????????????
-	grid* g = grid::getInstance();
-	pathCell* c = g->getCellAt(location->returnFirst(),location->returnSecond());
-	return c->getProb()<1;//?
-}*/
-
-void preProssesing(){
-    algo1* al = new algo1();
-    vector<area*> vc = al->make_areas(0.1,0.4);
-    areas = al->getConnectedAreas(vc);
-    areas2Robobts* assigner = new areas2Robobts();
-    assignment = assigner->statrAllocation(areas,ids,locs);
-}
-
-string area2str(subArea* area){
-	return "an area";
+	}
 }
 
 string path2str(vector<pathCell*> path){
-	vector<pathCell*>::const_iterator it;
-	stringstream s;
-	for( it = path.begin(); it != path.end(); ++it )
-	{
-	    if( it != path.begin() )
-	        s << " ";
+	string newS = "";
+	for (int i = 0; i < path.size(); ++i)
+	{	
+		ostringstream ss1,ss2;
+		ss1 << path[i]->getLocation().returnFirst();
+		ss2 << path[i]->getLocation().returnSecond();
+		newS +=  ss1.str() +  "," + ss2.str();
+		if (i!= path.size() -1) {
+			newS += " ";
+		}
 
-	    s << ((*it)->getLocation().returnFirst()) << ","<<((*it)->getLocation().returnFirst());
 	}
-	return s.str();
+	return newS;
 }
 
 

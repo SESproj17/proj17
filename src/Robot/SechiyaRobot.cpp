@@ -21,7 +21,6 @@ void waitForTeam();
 
 int main(int argc, char **argv)
 {
-    cout<<"gjhy" << endl;
 
     if (argc < 2) {
         ROS_ERROR("You must specify robot id.");
@@ -84,7 +83,6 @@ void teamStatusCallback(const ses::RobotStatus::ConstPtr& status_msg)
 
 void publishReadyStatus()
 {
-     cout<<"why are you dying???"<<endl;
     ses::RobotStatus status_msg;
 
     status_msg.header.stamp = ros::Time::now();

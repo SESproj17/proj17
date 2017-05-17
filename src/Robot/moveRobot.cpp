@@ -35,10 +35,10 @@ void moveRobot::scanCallback(const sensor_msgs::LaserScan::ConstPtr& scan)
 }
 	
 void moveRobot::pathCallback(const ses::Path::ConstPtr& path_msg){
+	cout<<"robot catched a path!"<<endl;
 	if(robot_id == path_msg->robot_id){
 		me->setState((robotState)path_msg->state);
 		me->setPath(path_msg->path);
-		me->setArea(path_msg->area);
 		if(me->getState() == (robotState)dead){cout<<"robot "<<robot_id<<" died, so we became sad"<<endl;exit(1);}
 		canMove = true;
 
@@ -55,7 +55,6 @@ void moveRobot::publishStep(){
 	step_msg.first_location = me->getLocation()->returnFirst();
 	step_msg.second_location = me->getLocation()->returnSecond();
 	step_msg.is_the_last = me->isTheLast();
-	step_msg.area = me->getArea();
 	
 	sleep(1.0);
 	steps_pub.publish(step_msg);
@@ -67,9 +66,11 @@ void moveRobot::publishStep(){
 
 void moveRobot::start(){
 	publishStep();
+	cout<<"first_location"<<endl;
 	while (true) {
 		ros::spinOnce();
 		if(canMove){
+			cout<<"start_moving_?"<<endl;
 			vector<myTuple*> path = me->getPath();
 			int size = path.size();
 

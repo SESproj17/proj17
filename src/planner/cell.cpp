@@ -1,4 +1,5 @@
 #include "cell.h"
+#include "subArea.h"
 #include <stdlib.h>
 
 cell::cell(myTuple* givenLocation,double givenProb,int givenId) {
@@ -6,6 +7,11 @@ cell::cell(myTuple* givenLocation,double givenProb,int givenId) {
 	this->prob = givenProb;
 	this->myState = NotVisited;
 	this->id = givenId;
+}
+
+
+void cell::setArea(subArea* givenArea){
+	this->area = givenArea;
 }
 //return the probability of the cell
 float cell::getProb() {return this->prob;}
@@ -25,7 +31,10 @@ bool cell::isEqual(cell* other) {
 State cell::getState() {return this->myState;}
 
 //if some robot walk on this cell mark it.
-void cell::changeState() {this->myState = Visited;}
+void cell::changeState() {
+	this->myState = Visited;
+	this->area->notifyVisitedCell();
+}
 
 //flip coin and check if the robot that move on this cell died or not.
 bool cell::imAlive() {

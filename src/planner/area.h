@@ -5,8 +5,11 @@
 #include <vector>
 #include "pathCell.h"
 
-enum AreaState {Assigned,NotAssigned,Covered};
+
 using namespace std;
+
+enum AreaState {Assigned,NotAssigned,Covered};
+
 class area {
 private:
 	vector<vector <pathCell*> > myCells;

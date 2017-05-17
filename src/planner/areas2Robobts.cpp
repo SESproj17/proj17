@@ -12,23 +12,31 @@ areas2Robobts::areas2Robobts(){}
 
 vector<costedArea*> areas2Robobts::statrAllocation(vector<vector<subArea*> >areas,vector<int> ids, vector<myTuple*> locs)
 {	
-	vector<subArea*> safests = areas[0];
+	vector<subArea*> safests = areas[1];//areas[0];
+	cout<<"statrAllocation::number of levels: "<<areas.size()<<endl;
+
 	vector<int>remove;
 	vector<subArea*> add;
 
+	
+
 	//assign robots in areas
-	for(int i = 0;i < ids.size();i++){
+	cout<<"statrAllocation::number of robots: "<<ids.size()<<endl;
+	cout<<"statrAllocation::number of safe areas: "<<areas[1].size()<<endl;
+	for(int i = 0;i < ids.size();i++){	
 		vector<costedArea*> costedAreas;
 		for(int j = 0;j < safests.size();j++){
+			
 			costedAreas.push_back(new costedArea(safests[j], findSafestPath(locs[i],safests[j])));
 		}
 		sort (costedAreas.begin(), costedAreas.end(), compByCost);//by cost
 		
-		//try to put robi in area a:
+		
 		for(int j = 0;j < costedAreas.size();j++){//check if area is not too dense with robots
 			subArea* a = costedAreas[j]->getArea();
 			if(a->getinitialRobots().size()*D <= a->getCells().size()){
 				a->addRobot(i);
+				break;
 			}
 		}
 	}
@@ -47,7 +55,7 @@ vector<costedArea*> areas2Robobts::statrAllocation(vector<vector<subArea*> >area
 
 	}
 	
-	areas[0] = addAndRemove(safests, add, remove);
+	//areas[0] = addAndRemove(safests, add, remove);
 	return assignment;
 }
 

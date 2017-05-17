@@ -27,13 +27,7 @@ void robot::setPath(string path){
 		vector<string> loc = split(spath[i],',');
 		this->path[i] = new myTuple(string2int(loc[0]),string2int(loc[1]));
 	}
-	//reverse it
 }
-
-void robot::setArea(string area){
-	this->area = area;
-}
-
 
 void robot::setState(robotState state){
 	this->state = state;
@@ -47,10 +41,6 @@ myTuple* robot::getLocation(){
 }
 bool robot::isTheLast(){
 	return this->path.size()==0;
-}
-
-string robot::getArea(){
-	return this->area;
 }
 
 int robot::string2int(string s){

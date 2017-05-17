@@ -10,11 +10,14 @@ limit- the highest probability
 vector<area*> algo1::make_areas(float jump,float limit) {
 	int i,j,rows,cols;
 	float level;
+	ros::NodeHandle nh;
+	nh.getParam("min_cost",level);
+	
 	grid* myGrid = grid::getInstance();
 	rows = myGrid->getRows();
 	cols = myGrid->getCols();
 
-	for(level = 0;level <= limit;level= level +jump){
+	for(;level <= limit;level= level +jump){
 		//init levelCells:
 		vector<vector <pathCell*> > levelCells;
 		levelCells.resize(rows);
@@ -94,9 +97,15 @@ vector<vector<subArea*> > algo1::getConnectedAreas(vector<area*> areas){
 	grid* myGrid = grid::getInstance();
 	int rows = myGrid->getRows();
 	int cols = myGrid->getCols();
+	cout<<"getConnectedAreas::number of areas 2 : "<<areas.size()<<endl;
 	for(int i = 0;i < areas.size();i++){
-		connected[i] = this->dfs(areas[i],rows,cols);
+		vector<subArea*> temp;
+		temp = this->dfs(areas[i],rows,cols);
+		cout<<"getConnectedAreas::size of temp: "<<temp.size()<<endl;
+		connected[i] = temp;
 	}
+	 cout<<"getConnectedAreas::number of levels: "<<connected.size()<<endl;
+	 cout<<"getConnectedAreas::number of safe areas: "<<connected[0].size()<<endl;
 	return connected;
 }
 

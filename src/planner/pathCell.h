@@ -5,14 +5,13 @@
 #include <iostream>
 #include "cell.h"
 
-class area;
-
-
+//class subArea;
 class pathCell: public cell {
 private:
 	float cost;
 	pathCell* lastCell;
 	vector<pathCell*> neighbors;
+	//subArea* area;
 
 public:
 	pathCell(myTuple* givenLocation,float givenProb,int givenId,float givenCost);
@@ -24,7 +23,6 @@ public:
 	float getCost();
 	void setLastPathCell(pathCell* lastOne);
 	vector<pathCell*> getNeighbors();
-	area* getArea();
-
+	//void setArea(subArea* givenArea);
 };
 #endif

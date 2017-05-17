@@ -152,6 +152,7 @@ vector<pathCell*> grid::dijkstra(int initI,int initJ,int goalI,int goalJ){
     }
     
     path.push_back(goal);
+    reverse(path.begin(),path.end());
     return path;
 }
 

@@ -9,6 +9,9 @@
 
 
 using namespace std;
+
+//enum AreaState {Assigned,NotAssigned,Covered};
+
 class subArea {
 private:
 	vector<vector <pathCell*> > myCells;
@@ -18,6 +21,7 @@ private:
 	float prob;
 	int myLevel;
 	AreaState state;
+	int unvisited;
 	
 public:
 	subArea(vector<vector <pathCell*> > givenCells,float givenProb,int lvl);
@@ -31,7 +35,7 @@ public:
 	int getLevel();
 	void changeState(AreaState newState);
 	AreaState getState();
-	void print();
+	void notifyVisitedCell();	
 };
 
 #endif
