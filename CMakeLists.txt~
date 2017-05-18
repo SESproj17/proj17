@@ -141,7 +141,7 @@ include_directories(
 
 add_executable(robot src/Robot/moveRobot.cpp src/Robot/robot.cpp src/Robot/SechiyaRobot.cpp src/Robot/myTuple.cpp)
 
-add_executable(monitor src/planner/algo1.cpp src/planner/Allocator.cpp  src/planner/area.cpp  src/planner/areas2Robobts.cpp src/planner/cell.cpp src/planner/costedArea.cpp src/planner/costedPath.cpp src/planner/grid.cpp src/planner/monitor.cpp src/planner/myTuple.cpp src/planner/pathCell.cpp src/planner/subArea.cpp)
+add_executable(monitor src/planner/algo1.cpp src/planner/allocation.cpp  src/planner/area.cpp  src/planner/areas2Robobts.cpp src/planner/cell.cpp src/planner/costedArea.cpp src/planner/costedPath.cpp src/planner/grid.cpp src/planner/monitor.cpp src/planner/myTuple.cpp src/planner/pathCell.cpp src/planner/subArea.cpp src/planner/splitBetweenRobot.cpp)
 
 
 

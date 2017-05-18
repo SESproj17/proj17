@@ -2,68 +2,101 @@
 #include "areas2Robobts.h"
 using namespace std;
 
-struct myclass {
-  bool operator() ( costedArea* first,costedArea* second) 
-  { return (first->getCost() < second->getCost());}
-} compByCost;
+areas2Robobts::areas2Robobts(){
+	ros::NodeHandle nh;
+	double jump,max;
+	nh.getParam("jump_cost",jump);
+	nh.getParam("max_cost",max);
+    algo1* al = new algo1();
+    vector<area*> vc = al->make_areas(jump,max);
+    areas = al->getConnectedAreas(vc);
+}
 
-areas2Robobts::areas2Robobts(){}
+vector<pathCell*> areas2Robobts::getSafestPath(myTuple robiLocation, subArea* area){
 
+}
 
-vector<costedArea*> areas2Robobts::statrAllocation(vector<vector<subArea*> >areas,vector<int> ids, vector<myTuple*> locs)
+subArea* areas2Robobts::lookForNewArea(myTuple location){
+
+}
+
+vector<subArea*> areas2Robobts::statrAllocation(vector<myTuple> teamStartLocations)
 {	
-	vector<subArea*> safests = areas[1];//areas[0];
-	cout<<"statrAllocation::number of levels: "<<areas.size()<<endl;
-
-	vector<int>remove;
-	vector<subArea*> add;
-
-	
+	cout<<"statrAllocation::number of robots: "<<teamStartLocations.size()<<endl;
+	cout<<"statrAllocation::number of safe areas: "<<areas[0].size()<<endl;
 
 	//assign robots in areas
-	cout<<"statrAllocation::number of robots: "<<ids.size()<<endl;
-	cout<<"statrAllocation::number of safe areas: "<<areas[1].size()<<endl;
-	for(int i = 0;i < ids.size();i++){	
-		vector<costedArea*> costedAreas;
-		for(int j = 0;j < safests.size();j++){
-			
-			costedAreas.push_back(new costedArea(safests[j], findSafestPath(locs[i],safests[j])));
-		}
-		sort (costedAreas.begin(), costedAreas.end(), compByCost);//by cost
-		
-		
-		for(int j = 0;j < costedAreas.size();j++){//check if area is not too dense with robots
-			subArea* a = costedAreas[j]->getArea();
-			if(a->getinitialRobots().size()*D <= a->getCells().size()){
+	vector<subArea*> sortedAreas;
+	for(int i = 0;i < teamStartLocations.size();i++){	
+		sortedAreas = sortedAvailableAreasPerLocation(teamStartLocations[i], NotAssigned);				
+		for(int j = 0;j < sortedAreas.size();j++){//check if area is not too dense with robots
+			subArea* a = sortedAreas[j];
+			if(a->getinitialRobots().size()*D <= a->getCells().size()){// after 
 				a->addRobot(i);
 				break;
 			}
 		}
 	}
-	vector<costedArea*>assignment;
-	assignment.resize(ids.size());
-	for(int i = 0;i <safests.size();i++){
-		subArea* a = safests[i];
-		if(a->getinitialRobots().size()>1){
-			remove.push_back(i);			
-			vector<subArea*>newAreas = splitAreaBetweenHisrobots(a);
-			add.insert(add.end(), newAreas.begin(), newAreas.end());
-		} else if (a->getinitialRobots().size()==1){
-			int id = a->getinitialRobots()[0];
-			assignment[id] = new costedArea(a, findSafestPath(locs[id],a));
-		}
 
-	}
+	vector<subArea*> assignment;
+	assignment.resize(teamStartLocations.size());
 	
-	//areas[0] = addAndRemove(safests, add, remove);
+	for(int i = 0;i <sortedAreas.size();i++){
+		subArea* a = sortedAreas[i];
+		vector<int> idsRobotsOfA= a->getinitialRobots();
+		if(idsRobotsOfA.size()>1){	
+			vector<subArea*> splited = split(idsRobotsOfA,a);
+			for (int i = 0; i < idsRobotsOfA.size(); ++i)
+			{
+				assignment[idsRobotsOfA[i]] = splited[i];
+			}
+		} else if (idsRobotsOfA.size()==1){
+			int id = a->getinitialRobots()[0];
+			assignment[id] = a;
+		}
+	}
 	return assignment;
 }
 
-void aRobot2area(int idOfRobot, subArea* area){
-	//
+vector<subArea*> areas2Robobts::sortedAvailableAreasPerLocation(myTuple location, AreaState askedState){
+	vector<costedArea*> costedAreas;
+	//vector<subArea*> safests = getSafeAreas();
+	vector<subArea*> safests = areas[0];
+	for(int j = 0;j < safests.size();j++){
+		subArea* area = safests[j];
+		if(area->getState() == askedState){
+			costedAreas.push_back(new costedArea(area, findSafestPath(location,safests[j])));
+		}
+	}
+	sort (costedAreas.begin(), costedAreas.end(), compByCost);//by cost
+	vector<subArea*> sortedAreas;
+	for (int i = 0; i < costedAreas.size(); ++i)
+	{
+		sortedAreas.push_back(costedAreas[i]->getArea());
+	}
+	return sortedAreas;
 }
 
- costedPath* areas2Robobts::findSafestPath(myTuple* robiLocation, subArea* area){
+
+vector<subArea*> areas2Robobts::split(vector<int> robots, subArea* areaToSplit){
+	areaToSplit->changeState(Covered);
+	splitBetweenRobots sbr(robots, areaToSplit);
+	vector<subArea*> splited = sbr.split();
+	for (int i = 0; i < splited.size(); ++i)
+	{
+		add(splited[i]);
+	}
+	return splited;
+}
+
+
+
+vector<pathCell*> findAreaToShare(){
+
+} 
+
+
+ costedPath* areas2Robobts::findSafestPath(myTuple robiLocation, subArea* area){
  	grid* g = grid::getInstance();
  	vector<costedPath*>costedPaths;
  	vector<pathCell*> cells = area->getCells();
@@ -72,7 +105,7 @@ void aRobot2area(int idOfRobot, subArea* area){
 		myTuple loc = cells[k]->getLocation();
 		int goalI = loc.returnFirst();
 		int goalJ = loc.returnSecond();
-		vector<pathCell*> path = g->dijkstra(robiLocation->returnFirst(),robiLocation->returnSecond(),goalI,goalJ);
+		vector<pathCell*> path = g->dijkstra(robiLocation.returnFirst(),robiLocation.returnSecond(),goalI,goalJ);
 		costedPath* cp = new costedPath(path, price(path)); 
 		costedPaths.push_back(cp);
 	}
@@ -99,80 +132,9 @@ void aRobot2area(int idOfRobot, subArea* area){
 	{
 		price += path[k]->getCost();
 	}
-
  }
 
-
-vector<subArea*> areas2Robobts::splitAreaBetweenHisrobots(subArea* area){
-	int k = area->getinitialRobots().size();
-/*	
-	//split
-	vector<vector<float> >costMatrix;
-	costMatrix.resize(k);
-		for (int l = 0; l < k; ++l) {
-			costMatrix[l].resize(k);
-		}
-	vector<vector<vector<pathCell*> > >pathMatrix;
-	pathMatrix.resize(k);
-	for (int l = 0; l < k; ++l) {
-		pathMatrix[l].resize(k);
-	}
-
-	vector<subArea*>newAreas;
-
-	vector<vector<pathCell*> > splitedGraph = graphPartition(area->getCells(),k);
-	for (int i = 0; i < k; ++i)
-	{
-		subArea* littleArea = new subArea(splitedGraph[i],area->getProb(),area->getLevel());
-		newAreas.push_back(littleArea);
-		for (int j = 0; j < k; ++j)
-		{
-			costedPath* cp = findSafestPath(area->getinitialRobots()[j]->getLocation(), littleArea);
-			costMatrix[i][j] = cp->getCost();
-			pathMatrix[i][j] = cp->getPath();
-		}
-
-	}
-
-	//assign
-	vector<myTuple*> assignments = hungarianMethod(costMatrix);
-
-	for (int x = 0; x < assignments.size(); ++x)
-	{
-		int i = assignments[x]->returnFirst();
-		int j = assignments[x]->returnSecond();
-		robot* robi = area->getinitialRobots()[j];
-		newAreas[i]->setWorker(robi);
-		robi->setArea(newAreas[i]);
-		robi->setPath(pathMatrix[i][j]);
-	}
-	return newAreas;*/
-}
-
-vector<subArea*> areas2Robobts::addAndRemove(vector<subArea*> safests, vector<subArea*>add, vector<int>remove){
-	vector<subArea*> afterChange;
-	for (int i = 0; i < remove.size(); ++i)
-	{
-		safests[remove[i]] = NULL;
-	}
-	for (int i = 0; i < safests.size(); ++i)
-	{
-		if(NULL!=safests[i]){
-			afterChange.push_back(safests[i]);
-		}
-	}
-	for (int i = 0; i < add.size(); ++i)
-	{
-		afterChange.push_back(add[i]);
-	}
-	return afterChange;
-}
-
-
-vector<vector<pathCell*> > areas2Robobts::graphPartition(vector<pathCell*>graph,int k){
-	//algorithm
-}
-
-vector<myTuple*> areas2Robobts::hungarianMethod(vector<vector<float> >costMatrix){
-	//algorithm
-}
+ void areas2Robobts::add(subArea* added){
+ 	int level = added->getLevel();
+ 	areas[level].push_back(added);
+ }

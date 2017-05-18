@@ -38,11 +38,6 @@ vector<int> subArea::getinitialRobots(){return this->initialRobots;}
 void subArea::addRobot(int robi){
     this->initialRobots.push_back(robi);
 }
-/*
-void subArea::setWorker(robot* robi){
-    this->worker = robi;
-    
-}*/
 float subArea::getProb() {return this->prob;}
 int subArea::getLevel() {return this->myLevel;}
 void subArea::changeState(AreaState newState) { this->state = newState; }

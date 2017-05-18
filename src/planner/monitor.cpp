@@ -20,7 +20,7 @@ unsigned int teamSize;
 unsigned int robotsCount = 0;
 bool robotsReady[MAX_ROBOTS_NUM];
 vector<int> ids;
-vector<myTuple*> locs;
+vector<myTuple> locs;
 allocation* al;
 
 
@@ -80,7 +80,8 @@ void teamStatusCallback(const ses::RobotStatus::ConstPtr& status_msg)
 		robotsCount++;
 		ids.push_back(robot_id);
 		cout<<"callBack: number of robots: "<<ids.size()<<endl;
-		locs.push_back (new myTuple(x,y));
+		myTuple m(x,y);
+		locs.push_back (m);
 		
 		if (robotsCount == teamSize) {
 			ROS_INFO("All robots GO!");
@@ -118,8 +119,8 @@ void stepCallback(const ses::step::ConstPtr& step_msg){
 	grid* g = grid::getInstance();
 	pathCell* c = g->getCellAt(step_msg->first_location, step_msg->first_location);
 	//publish only if the status changed!
-	if(state == idle || state == done){
-		string newPath = path2str(al->allocateNextArea(robot_id));
+	if(state == idle || state == done){//done-??????
+		string newPath = path2str(al->allocateStartArea(robot_id));
 		publishPath(robot_id,traveling,newPath);
 		return;
 	}
@@ -133,12 +134,12 @@ void stepCallback(const ses::step::ConstPtr& step_msg){
 
 	if(step_msg->is_the_last){
 		if(state == traveling){//robi found his area
-			string newPath = path2str(al->areaCoverage(c,robot_id));
+			string newPath = path2str(al->areaCoverage(c->getLocation(),robot_id));
 			publishPath(robot_id,covering,newPath);
 			return;
 		}
 		if(state == covering){//robi finished to cover his area
-			string newPath = path2str(al->allocateNextArea(robot_id));
+			string newPath = path2str(al->allocateNextArea(c-> getLocation(), robot_id));
 			publishPath(robot_id,traveling,newPath);
 		}
 	}
