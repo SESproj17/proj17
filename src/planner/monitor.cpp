@@ -131,7 +131,6 @@ void stepCallback(const ses::step::ConstPtr& step_msg){
 		publishPath(robot_id,dead, "wait for Resurrection");
 		return;
 	}
-
 	if(step_msg->is_the_last){
 		if(state == traveling){//robi found his area
 			string newPath = path2str(al->areaCoverage(c->getLocation(),robot_id));
@@ -139,8 +138,13 @@ void stepCallback(const ses::step::ConstPtr& step_msg){
 			return;
 		}
 		if(state == covering){//robi finished to cover his area
-			string newPath = path2str(al->allocateNextArea(c-> getLocation(), robot_id));
+			vector<pathCell*> path = al->allocateNextArea(c-> getLocation(), robot_id);
+			if(path.size() == 0){
+				publishPath(robot_id,done,"end");
+			}
+			string newPath = path2str(path);
 			publishPath(robot_id,traveling,newPath);
+			return;
 		}
 	}
 }

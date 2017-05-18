@@ -6,6 +6,7 @@
 #include <iostream>
 #include "pathCell.h"
 #include "area.h"
+#include "grid.h"
 
 
 using namespace std;
@@ -27,6 +28,7 @@ public:
 	subArea(vector<vector <pathCell*> > givenCells,float givenProb,int lvl);
 	subArea(vector<pathCell* > newCells,float givenProb,int lvl);
 	vector<pathCell*> getCells();
+	vector<pathCell*> coverge(myTuple start);
 	vector<int> getinitialRobots();
 	void addRobot(int robi);
 	void setWorker(int robi);

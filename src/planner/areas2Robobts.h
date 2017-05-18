@@ -30,8 +30,9 @@ private:
 	void add(subArea* added);
 	vector<subArea*> split(vector<int> robots, subArea* areaToSplit);
 	vector<subArea*> sortedAvailableAreasPerLocation(myTuple location, AreaState askedState);
+	subArea* findAreaToShare();
 	
-	
+	vector<subArea*> getSafeAreas();
 	costedPath* findSafestPath(myTuple robiLocation, subArea* area);
 	costedPath* min(vector<costedPath*> paths);
 	float price(vector<pathCell*> path);

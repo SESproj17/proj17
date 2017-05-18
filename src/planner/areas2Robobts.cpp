@@ -13,11 +13,17 @@ areas2Robobts::areas2Robobts(){
 }
 
 vector<pathCell*> areas2Robobts::getSafestPath(myTuple robiLocation, subArea* area){
-
+	costedPath* cp = findSafestPath(robiLocation,area);
+	return cp->getPath();
 }
 
 subArea* areas2Robobts::lookForNewArea(myTuple location){
-
+	vector<subArea*> a = sortedAvailableAreasPerLocation(location, Assigned);
+	if(a.size()>0){
+		return a[0];
+	}
+	subArea* area = findAreaToShare();
+	return area;	
 }
 
 vector<subArea*> areas2Robobts::statrAllocation(vector<myTuple> teamStartLocations)
@@ -60,8 +66,7 @@ vector<subArea*> areas2Robobts::statrAllocation(vector<myTuple> teamStartLocatio
 
 vector<subArea*> areas2Robobts::sortedAvailableAreasPerLocation(myTuple location, AreaState askedState){
 	vector<costedArea*> costedAreas;
-	//vector<subArea*> safests = getSafeAreas();
-	vector<subArea*> safests = areas[0];
+	vector<subArea*> safests = getSafeAreas();
 	for(int j = 0;j < safests.size();j++){
 		subArea* area = safests[j];
 		if(area->getState() == askedState){
@@ -77,6 +82,11 @@ vector<subArea*> areas2Robobts::sortedAvailableAreasPerLocation(myTuple location
 	return sortedAreas;
 }
 
+vector<subArea*> areas2Robobts::getSafeAreas(){
+	int i = 0;
+	while(areas[i].size() == 0){i++;}
+	return areas[i];
+}
 
 vector<subArea*> areas2Robobts::split(vector<int> robots, subArea* areaToSplit){
 	areaToSplit->changeState(Covered);
@@ -91,7 +101,7 @@ vector<subArea*> areas2Robobts::split(vector<int> robots, subArea* areaToSplit){
 
 
 
-vector<pathCell*> findAreaToShare(){
+subArea* areas2Robobts::findAreaToShare(){
 
 } 
 

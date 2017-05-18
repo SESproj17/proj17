@@ -46,10 +46,20 @@ vector<pathCell*> allocation::allocateNextArea(myTuple location,int robot_id){
 	if(robot_id == skeleton){cout<<"allocateNextArea::allocation to dead robot"<<endl;exit(0);}
 	subArea* area = a2r->lookForNewArea(location);
 	assign(area, robot_id);
+	if(NULL == area){
+		vector<pathCell*> empty;
+		return empty;
+	}
 	return a2r->getSafestPath(location,area);
 }
 
+/*
+greedy approach, where in each step it leads the robot
+to the safest nearest cell to its current location which has not been
+covered yet.
+*/
 vector<pathCell*> allocation::areaCoverage(myTuple location, int robot_id){
-
+	subArea* area = assignment[robot_id];
+	return area->coverge(location);
 }
 

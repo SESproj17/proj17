@@ -27,6 +27,38 @@ subArea::subArea(vector<pathCell* > newCells,float givenProb,int lvl){
 
 }(*/
 
+vector<pathCell*> subArea::coverge(myTuple start){
+    grid* g = grid::getInstance();
+    vector<pathCell*> path;
+    vector<pathCell*> notAppearsAtPath;
+    for (int i = 0; i < cells.size(); ++i)
+    {
+        if (!(cells[i]->getState())){
+            notAppearsAtPath.push_back(cells[i]);
+        }
+    }
+    
+    while(notAppearsAtPath.size()){
+        myTuple dest = notAppearsAtPath[0]->getLocation();
+       vector<pathCell*> temp = g->dijkstra(start.returnFirst(),start.returnSecond(),dest.returnFirst(),dest.returnSecond());
+        path.insert(path.end(), temp.begin(), temp.end()); 
+        notAppearsAtPath.erase(notAppearsAtPath.begin());
+        for (int i = 0; i < temp.size(); ++i)
+        {
+            temp[i]->setAppear();
+        }
+        temp.clear();
+        for (int i = 0; i < notAppearsAtPath.size(); ++i)
+        {
+            if(!(notAppearsAtPath[i]->wasInPath())){
+                temp.push_back(notAppearsAtPath[i]);
+            }
+        }
+        notAppearsAtPath = temp;    
+    }
+    return path;
+}
+
 vector<pathCell*> subArea::getCells(){
     return this->cells;
 }

@@ -10,6 +10,7 @@ pathCell::pathCell(myTuple* givenLocation,float givenProb,int givenId,float give
 	 this->cost = givenCost/minCost;
 	}
 	this->lastCell = NULL;
+	wasInCoveragePath = false;
 
 }
 //Set the cost of the cell
@@ -31,7 +32,6 @@ void pathCell::addNeighbors(pathCell* neigh) {
 
 vector<pathCell*> pathCell::getNeighbors() { return this->neighbors;}
 
-/*
-void pathCell::setArea(subArea* givenArea){
-	this->area = givenArea;
-}*/
+bool pathCell::wasInPath(){this->wasInCoveragePath == true;}
+
+void pathCell::setAppear(){this->wasInCoveragePath = true;}

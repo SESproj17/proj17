@@ -5,24 +5,26 @@
 #include <iostream>
 #include "cell.h"
 
-//class subArea;
+
 class pathCell: public cell {
 private:
 	float cost;
 	pathCell* lastCell;
 	vector<pathCell*> neighbors;
-	//subArea* area;
+	bool wasInCoveragePath;
+	
 
 public:
 	pathCell(myTuple* givenLocation,float givenProb,int givenId,float givenCost);
 	void setCost(float newCost);
 
 	void addNeighbors(pathCell* neigh);
-	
+	bool wasInPath();
+	void setAppear();
 	pathCell* getLastCell();
 	float getCost();
 	void setLastPathCell(pathCell* lastOne);
 	vector<pathCell*> getNeighbors();
-	//void setArea(subArea* givenArea);
+	
 };
 #endif
