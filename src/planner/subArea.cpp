@@ -11,6 +11,7 @@ subArea::subArea(vector<vector <pathCell*> > givenCells,float givenProb,int lvl)
         for (int j = 0; j < givenCells[i].size(); ++j)
         {
             if(givenCells[i][j]){
+                givenCells[i][j]->setArea(this);
                 this->cells.push_back(givenCells[i][j]);
             }
         }
@@ -77,7 +78,19 @@ void subArea::changeState(AreaState newState) { this->state = newState; }
 AreaState subArea::getState() {return this->state;}
 
 void subArea::notifyVisitedCell(){
+    //debug code
+    cout<< "subArea::notifyVisitedCell: number of unvisited"<< unvisited<<endl;
+    //debug code
     unvisited--;
     if (unvisited == 0){this->state = Covered;}
+
+    //debug code
+    string strstate;
+    if(state == Assigned){strstate = "Assigned";}
+    if(state == NotAssigned){strstate = "NotAssigned";}
+    if(state == Covered){strstate = "Covered";}
+    cout<< "subArea::notifyVisitedCell: Area State"<< strstate <<endl;
+
+    //debug code
 }
 

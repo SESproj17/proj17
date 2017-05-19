@@ -34,19 +34,23 @@ vector<subArea*> areas2Robobts::statrAllocation(vector<myTuple> teamStartLocatio
 	//assign robots in areas
 	vector<subArea*> sortedAreas;
 	for(int i = 0;i < teamStartLocations.size();i++){	
-		sortedAreas = sortedAvailableAreasPerLocation(teamStartLocations[i], NotAssigned);				
+		sortedAreas = sortedAvailableAreasPerLocation(teamStartLocations[i], NotAssigned);
+		cout<<"statrAllocation::size of sorted: "<<sortedAreas.size()<<endl;			
 		for(int j = 0;j < sortedAreas.size();j++){//check if area is not too dense with robots
 			subArea* a = sortedAreas[j];
 			if(a->getinitialRobots().size()*D <= a->getCells().size()){// after 
 				a->addRobot(i);
+				cout<<"statrAllocation::a assigned "<<a->getLevel()<<endl;
 				break;
 			}
+			cout<<"statrAllocation::need to not beeing here "<<endl;
 		}
 	}
 
 	vector<subArea*> assignment;
 	assignment.resize(teamStartLocations.size());
 	
+	//we can stop this loop when no robots left
 	for(int i = 0;i <sortedAreas.size();i++){
 		subArea* a = sortedAreas[i];
 		vector<int> idsRobotsOfA= a->getinitialRobots();
@@ -59,8 +63,10 @@ vector<subArea*> areas2Robobts::statrAllocation(vector<myTuple> teamStartLocatio
 		} else if (idsRobotsOfA.size()==1){
 			int id = a->getinitialRobots()[0];
 			assignment[id] = a;
+			cout<<"statrAllocation::a->level: "<<assignment[id]->getLevel()<<endl;
 		}
 	}
+	cout<<"statrAllocation::size of assignment: "<<assignment.size()<<endl;
 	return assignment;
 }
 

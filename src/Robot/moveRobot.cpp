@@ -11,7 +11,7 @@ moveRobot::moveRobot(int firstStart, int secondStart, int robot_id){
 	me = new robot(firstStart, secondStart);
 	robot_id = robot_id;
 }
-
+/*
 // Process the incoming laser scan message
 void moveRobot::scanCallback(const sensor_msgs::LaserScan::ConstPtr& scan)
 {
@@ -32,14 +32,14 @@ void moveRobot::scanCallback(const sensor_msgs::LaserScan::ConstPtr& scan)
         ROS_INFO("Stop!");
         canMove = false;
     }
-}
+}*/
 	
 void moveRobot::pathCallback(const ses::Path::ConstPtr& path_msg){
 	cout<<"robot catched a path!"<<endl;
 	if(robot_id == path_msg->robot_id){
 		me->setState((robotState)path_msg->state);
 		me->setPath(path_msg->path);
-		if(me->getState() == (robotState)dead){cout<<"robot "<<robot_id<<" died, so we became sad"<<endl;exit(1);}
+		if(me->getState() == (robotState)dead){cout<<"moveRobot::robot "<<robot_id<<" died, so we became sad"<<endl;exit(0);}
 		canMove = true;
 
 	}
@@ -107,7 +107,9 @@ void moveRobot::start(){
 		 	} else {
 		 		msg.linear.x = -0.2;
 		 	}
-		 	cout << " need to dist " << goal << " current dist " << currentLocationY << endl;
+		 	////debug code
+		 	//cout << " need to dist " << goal << " current dist " << currentLocationY << endl;
+		 	////debug code
 		 	publisher.publish(msg);
 		 	getPose();
 		 }
@@ -123,7 +125,9 @@ void moveRobot::start(){
 		 	} else {
 		 		msg.linear.x = -0.2;
 		 	}
-		 	cout << " need to dist " << goal << " current dist " << currentLocationX << endl;
+		 	////debug code
+		 	//cout << " need to dist " << goal << " current dist " << currentLocationX << endl;
+		 	////debug code
 		 	publisher.publish(msg);		 	
 		 	getPose();
 		 }
@@ -161,7 +165,11 @@ void moveRobot::getPose() {
 	double targetAngle = directionAngles[d];
 	bool turnLeft;
 	getPose();
-	cout << "current " << currentAngle << endl;
+
+	////debug code
+	//cout << "current " << currentAngle << endl;
+	////debug code
+
 	// Decide to which side to rotate - left or right by choosing the small angle
 	// bool turnLeft;
 	if (targetAngle - currentAngle > 0 && targetAngle - currentAngle < M_PI)
@@ -189,7 +197,11 @@ void moveRobot::getPose() {
 		rate.sleep();
 		getPose();
 	}
-	cout << "Angle refinement #1" << endl;
+
+	////debug code
+	//cout << "Angle refinement #1" << endl;
+	////debug code
+
 	// Slow the speed near the target
 	//rotateCommand.angular.z = turnLeft ? 0.1 * angularSpeed : -0.1 * angularSpeed;
 	rotateCommand.angular.z = turnLeft ? 0.5 * angularSpeed : -0.5 * angularSpeed;
@@ -206,7 +218,10 @@ void moveRobot::getPose() {
 
 		
 	}
-	cout << "Angle refinement #2" << endl;
+	////debug code
+	//cout << "Angle refinement #2" << endl;
+	////debug code
+
 	// Further refine the angle
 	//rotateCommand.angular.z = turnLeft ? 0.05 * angularSpeed : -0.05 * angularSpeed;
 	while (ros::ok() && abs(currentAngle - targetAngle) > angularTolerance) {
@@ -221,7 +236,9 @@ void moveRobot::getPose() {
 
 
 	}
-	cout << "Angle refinement #3" << endl;
+	////debug code
+	//cout << "Angle refinement #3" << endl;
+	////debug code
 
 
 	for (int i = 0; i < 20; i++) {
@@ -244,7 +261,9 @@ void moveRobot::getPose() {
 	} else if (location->returnFirst() < nextLocation->returnFirst() && location->returnSecond() == nextLocation->returnSecond()) {
 		d = DOWN;						
 	}
-	cout << "DIR " << d <<endl;
+	////debug code
+	//cout << "DIR " << d <<endl;
+	////debug code
 	rotate(d);
 	step(d);
 

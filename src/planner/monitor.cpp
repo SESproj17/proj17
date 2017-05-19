@@ -22,6 +22,7 @@ bool robotsReady[MAX_ROBOTS_NUM];
 vector<int> ids;
 vector<myTuple> locs;
 allocation* al;
+int sekelton = -1;
 
 
 ros::Subscriber team_status_sub;
@@ -30,7 +31,7 @@ ros::Publisher team_status_pub;
 ros::Subscriber steps_sub;
 ros::Publisher path_pub;
 
-void preProssesing();
+void bury(int robot_id);
 string path2str(vector<pathCell*> path);
 void teamStatusCallback(const ses::RobotStatus::ConstPtr& status_msg);
 void stepCallback(const ses::step::ConstPtr& step_msg);
@@ -62,7 +63,7 @@ int main(int argc, char **argv)
 	path_pub = nh.advertise<ses::Path>("paths", 10);
 	steps_sub = nh.subscribe("steps", 1, &stepCallback);
 
-
+	cout<<"monitor is here!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"<<endl;
 	ROS_INFO("Waiting for robots to connect...");
 
 	ros::spin();
@@ -118,35 +119,87 @@ void stepCallback(const ses::step::ConstPtr& step_msg){
 	robotState state = (robotState)step_msg->state;
 	grid* g = grid::getInstance();
 	pathCell* c = g->getCellAt(step_msg->first_location, step_msg->first_location);
+
+	//debug code
+	string strstate;
+	if(state == idle){strstate = "idle";}
+	if(state == traveling){strstate = "traveling";}
+	if(state == covering){strstate = "covering";}
+	if(state == dead){strstate = "dead";}
+	if(state == done){strstate = "done";}
+	cout<< "monitor::state of the robot: "<< strstate<< endl;
+	//
+
 	//publish only if the status changed!
 	if(state == idle || state == done){//done-??????
 		string newPath = path2str(al->allocateStartArea(robot_id));
+		//debug code
+		cout<< "monitor::recomended path: "<< newPath << endl;
+		//debug code
 		publishPath(robot_id,traveling,newPath);
 		return;
 	}
+	//debug code
+	cout<< "monitor::before changeState: "<< c->getState() << endl;
+	//debug code
+
 	c->changeState();
+
+	//debug code
+	cout<< "monitor::after changeState: "<< c->getState() << endl;
+	//debug code
+
 	if(!(c->imAlive())){
-		//set c as obstacle
+		//debug code
+		cout<< "monitor::robot died" << endl;
+		//debug code
+
+		//set c as obstacle?
 		al->bury(robot_id);
+		bury(robot_id);
+
+		//debug code
+		cout<< "monitor::recomended path: "<< "wait for Resurrection" << endl;
+		//debug code
 		publishPath(robot_id,dead, "wait for Resurrection");
+
 		return;
 	}
 	if(step_msg->is_the_last){
 		if(state == traveling){//robi found his area
 			string newPath = path2str(al->areaCoverage(c->getLocation(),robot_id));
+			//debug code
+			cout<< "monitor::recomended path: "<< newPath << endl;
+			//debug code
 			publishPath(robot_id,covering,newPath);
 			return;
 		}
 		if(state == covering){//robi finished to cover his area
 			vector<pathCell*> path = al->allocateNextArea(c-> getLocation(), robot_id);
 			if(path.size() == 0){
+				//debug code
+				cout<< "monitor::recomended path: "<< "end" << endl;
+				//debug code
 				publishPath(robot_id,done,"end");
 			}
 			string newPath = path2str(path);
+			//debug code
+			cout<< "monitor::recomended path: "<< newPath << endl;
+			//debug code
 			publishPath(robot_id,traveling,newPath);
 			return;
 		}
 	}
+}
+
+void bury(int robot_id){
+	ids[robot_id] = sekelton;
+	for (int i = 0; i < ids.size(); ++i)
+	{
+		if(ids[robot_id]!= sekelton){return;}
+	}
+	cout<<"my whole team killed :("<<endl<<"bye..."<<endl;;
+
 }
 
 string path2str(vector<pathCell*> path){
