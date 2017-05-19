@@ -54,7 +54,8 @@ vector<pathCell*> subArea::coverge(myTuple start){
                 temp.push_back(notAppearsAtPath[i]);
             }
         }
-        notAppearsAtPath = temp;    
+        notAppearsAtPath = temp; 
+        start = path[path.size()-1]->getLocation();  
     }
     return path;
 }
