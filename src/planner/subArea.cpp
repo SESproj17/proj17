@@ -11,7 +11,6 @@ subArea::subArea(vector<vector <pathCell*> > givenCells,float givenProb,int lvl)
         for (int j = 0; j < givenCells[i].size(); ++j)
         {
             if(givenCells[i][j]){
-                givenCells[i][j]->setArea(this);
                 this->cells.push_back(givenCells[i][j]);
             }
         }
@@ -74,8 +73,25 @@ void subArea::addRobot(int robi){
 }
 float subArea::getProb() {return this->prob;}
 int subArea::getLevel() {return this->myLevel;}
-void subArea::changeState(AreaState newState) { this->state = newState; }
-AreaState subArea::getState() {return this->state;}
+
+void subArea::changeState(AreaState newState) {
+    //debug code
+    cout<<"subArea::changeState b: "<<newState<<endl;
+    //debug code
+     this->state = newState; 
+     //debug code
+    cout<<"subArea::changeState a"<<endl;
+    //debug code
+ }
+AreaState subArea::getState() {
+    //debug code
+    cout<<"subArea::getState b"<<endl;
+    //debug code
+    return this->state;
+    //debug code
+    cout<<"subArea::getState a"<<endl;
+    //debug code
+}
 
 void subArea::notifyVisitedCell(){
     //debug code

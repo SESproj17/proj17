@@ -41,7 +41,7 @@ void cell::changeState() {
 	this->myState = Visited;
 	//debug code
 	cout<< "cell::changeState: before notifyVisitedCell"<< endl;
-	cout<< "cell::changeState: is area exist??: "<< this->area << "so it is.."<<endl;
+	cout<< "cell::changeState: is area exist??: "<< this->area->getLevel() << "so it is.."<<endl;
 	//debug code
 
 	this->area->notifyVisitedCell();

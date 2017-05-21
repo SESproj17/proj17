@@ -35,8 +35,10 @@ public:
 	pathCell* getCellAt(int i,int j);
 	float getProb();
 	int getLevel();
+
 	void changeState(AreaState newState);
 	AreaState getState();
+	
 	void notifyVisitedCell();	
 };
 

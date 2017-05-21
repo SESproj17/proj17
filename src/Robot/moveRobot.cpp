@@ -11,7 +11,7 @@ moveRobot::moveRobot(int firstStart, int secondStart, int robot_id){
 	me = new robot(firstStart, secondStart);
 	robot_id = robot_id;
 }
-/*
+
 // Process the incoming laser scan message
 void moveRobot::scanCallback(const sensor_msgs::LaserScan::ConstPtr& scan)
 {
@@ -32,7 +32,7 @@ void moveRobot::scanCallback(const sensor_msgs::LaserScan::ConstPtr& scan)
         ROS_INFO("Stop!");
         canMove = false;
     }
-}*/
+}
 	
 void moveRobot::pathCallback(const ses::Path::ConstPtr& path_msg){
 	cout<<"robot catched a path!"<<endl;

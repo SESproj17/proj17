@@ -8,7 +8,7 @@
 
 using namespace std;
 
-enum AreaState {Assigned,NotAssigned,Covered};
+enum AreaState {NotAssigned,Assigned,Covered};
 
 class area {
 private:

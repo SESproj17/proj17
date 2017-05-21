@@ -97,15 +97,18 @@ vector<vector<subArea*> > algo1::getConnectedAreas(vector<area*> areas){
 	grid* myGrid = grid::getInstance();
 	int rows = myGrid->getRows();
 	int cols = myGrid->getCols();
-	cout<<"getConnectedAreas::number of areas 2 : "<<areas.size()<<endl;
 	for(int i = 0;i < areas.size();i++){
 		vector<subArea*> temp;
 		temp = this->dfs(areas[i],rows,cols);
+		//debug code
 		cout<<"getConnectedAreas::size of temp: "<<temp.size()<<endl;
+		//debug code
 		connected[i] = temp;
 	}
+	//debug code
 	 cout<<"getConnectedAreas::number of levels: "<<connected.size()<<endl;
 	 cout<<"getConnectedAreas::number of safe areas: "<<connected[0].size()<<endl;
+	//debug code 
 	return connected;
 }
 
@@ -147,6 +150,35 @@ vector<subArea*> algo1::dfs(area* graph,int rows,int cols){
 				//create an area and add it to the vector
 				subArea* connectedArea = new subArea(subA,graph->getProb(),graph->getLevel());
 				connectedArea->changeState(NotAssigned);
+
+				////debug code
+				//string strstate;
+				//AreaState state = connectedArea->getState();
+			    //if(state == Assigned){strstate = "Assigned";}
+			    //if(state == NotAssigned){strstate = "NotAssigned";}
+			    //if(state == Covered){strstate = "Covered";}
+				//cout<<"algo1::dfs:state of area: "<<strstate<< endl;
+				//debug code
+
+
+				vector<pathCell*> cells = connectedArea->getCells();
+				for (int i = 0; i < cells.size(); ++i)
+				{
+					cells[i]->setArea(connectedArea);
+					////debug code
+					//cells[i]->changeState();
+					////debug code
+				}
+				//debug code
+				//state = connectedArea->getState();
+			    //if(state == Assigned){strstate = "Assigned";}
+			    //if(state == NotAssigned){strstate = "NotAssigned";}
+			    //if(state == Covered){strstate = "Covered";}
+				//cout<<"algo1::dfs:state of area: "<<strstate<< endl;
+				//debug code
+
+
+				
 				connectedList.push_back(connectedArea);
 			}
 		}
