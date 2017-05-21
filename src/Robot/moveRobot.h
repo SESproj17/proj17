@@ -45,7 +45,8 @@ private:
 
 	const static double MIN_SCAN_ANGLE = -30.0/180*M_PI;
     const static double MAX_SCAN_ANGLE = +30.0/180*M_PI;
-    const static float MIN_DIST_FROM_OBSTACLE = 0.8;
+    const static float MIN_DIST_FROM_OBSTACLE = 0.2;
+
 	const static double placeTol = 0.03;
 	const static double angularTolerance  = 0.05;
 	const static double DX = 0.9;

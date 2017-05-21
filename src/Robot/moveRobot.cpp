@@ -39,7 +39,10 @@ void moveRobot::pathCallback(const ses::Path::ConstPtr& path_msg){
 	if(robot_id == path_msg->robot_id){
 		me->setState((robotState)path_msg->state);
 		me->setPath(path_msg->path);
-		if(me->getState() == (robotState)dead){cout<<"moveRobot::robot "<<robot_id<<" died, so we became sad"<<endl;exit(0);}
+		if(me->getState() == (robotState)dead) {
+			cout<<"moveRobot::robot "<<robot_id<<" died, so we became sad"<<endl;
+			exit(0);
+		}
 		canMove = true;
 
 	}
@@ -70,7 +73,7 @@ void moveRobot::start(){
 	while (true) {
 		ros::spinOnce();
 		if(canMove){
-			cout<<"start_moving_?"<<endl;
+		
 			vector<myTuple*> path = me->getPath();
 			int size = path.size();
 
