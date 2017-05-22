@@ -15,3 +15,19 @@ void area::changeState(AreaState newState) { this->state = newState; }
 AreaState area::getState() {return this->state;}
 bool area::isCovered() { return this->state == Covered;}
 
+void area::print() {
+	cout<<"level: "<<myLevel<<endl;
+    for (int i = 0; i < myCells.size(); ++i)
+    {
+        for (int j = 0; j < myCells[i].size(); ++j)
+        {
+            if(myCells[i][j] == NULL){
+                cout << "O ";
+            }else {
+                cout << "1 ";
+            }
+        }
+        cout << endl;
+    }    
+}
+

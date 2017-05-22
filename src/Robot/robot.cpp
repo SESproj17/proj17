@@ -1,6 +1,7 @@
 #include "robot.h"
 #include <vector>
 #include <sstream>
+#include <cstdlib>
 #include <string>
 
 using namespace std;
@@ -29,6 +30,16 @@ void robot::setPath(string path){
 	}
 }
 
+void robot::setProbs(string probs){
+
+	vector<string> strProbs = split(probs, ' ');
+	this->probs.resize(strProbs.size());
+	for (int i = 0; i < strProbs.size(); ++i)
+	{
+		this->probs[i] = strtof((strProbs[i]).c_str(),0);
+	}
+}
+
 void robot::setState(robotState state){
 	this->state = state;
 }
@@ -40,7 +51,7 @@ myTuple* robot::getLocation(){
 	return this->location;
 }
 bool robot::isTheLast(){
-	return this->path.size()==0;
+	return this->path.size() == 1;
 }
 
 int robot::string2int(string s){
@@ -61,6 +72,17 @@ vector<string> robot::split(const string &s, char delim) {
 }
 
 void robot::move(){
+	this->probs.erase(this->probs.begin());
 	this->path.erase(this->path.begin());
 	this->location = path[0];
+}
+//flip coin and check if the robot that move on this cell died or not.
+bool robot::imAlive() {
+	srand(time(NULL));
+	int x;float y;
+	x = rand()%11;
+	y = float(x)/10;
+	if (y > probs[0]) {return true;}
+	this->state = dead;
+	return false;
 }

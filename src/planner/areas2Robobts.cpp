@@ -18,7 +18,8 @@ vector<pathCell*> areas2Robobts::getSafestPath(myTuple robiLocation, subArea* ar
 }
 
 subArea* areas2Robobts::lookForNewArea(myTuple location){
-	vector<subArea*> a = sortedAvailableAreasPerLocation(location, Assigned);
+	vector<subArea*> a = sortedAvailableAreasPerLocation(location, NotAssigned);
+	cout<<"list of areas to robot: "<<a.size()<<endl;
 	if(a.size()>0){
 		return a[0];
 	}
@@ -28,9 +29,6 @@ subArea* areas2Robobts::lookForNewArea(myTuple location){
 
 vector<subArea*> areas2Robobts::statrAllocation(vector<myTuple> teamStartLocations)
 {	
-	cout<<"statrAllocation::number of robots: "<<teamStartLocations.size()<<endl;
-	cout<<"statrAllocation::number of safe areas: "<<areas[0].size()<<endl;
-
 	//assign robots in areas
 	vector<subArea*> sortedAreas;
 	for(int i = 0;i < teamStartLocations.size();i++){	
@@ -75,8 +73,9 @@ vector<subArea*> areas2Robobts::sortedAvailableAreasPerLocation(myTuple location
 	vector<subArea*> safests = getSafeAreas();
 	for(int j = 0;j < safests.size();j++){
 		subArea* area = safests[j];
+		// /area->print();
 		if(area->getState() == askedState){
-			costedAreas.push_back(new costedArea(area, findSafestPath(location,safests[j])));
+			costedAreas.push_back(new costedArea(area, findSafestPath(location,area)));
 		}
 	}
 	sort (costedAreas.begin(), costedAreas.end(), compByCost);//by cost
@@ -122,7 +121,7 @@ subArea* areas2Robobts::findAreaToShare(){
 		int goalI = loc.returnFirst();
 		int goalJ = loc.returnSecond();
 		vector<pathCell*> path = g->dijkstra(robiLocation.returnFirst(),robiLocation.returnSecond(),goalI,goalJ);
-		costedPath* cp = new costedPath(path, price(path)); 
+		costedPath* cp = new costedPath(path, price(path));
 		costedPaths.push_back(cp);
 	}
 	return this->min(costedPaths);	        
@@ -148,6 +147,7 @@ subArea* areas2Robobts::findAreaToShare(){
 	{
 		price += path[k]->getCost();
 	}
+	return price;
  }
 
  void areas2Robobts::add(subArea* added){

@@ -39,10 +39,7 @@ void moveRobot::pathCallback(const ses::Path::ConstPtr& path_msg){
 	if(robot_id == path_msg->robot_id){
 		me->setState((robotState)path_msg->state);
 		me->setPath(path_msg->path);
-		if(me->getState() == (robotState)dead) {
-			cout<<"moveRobot::robot "<<robot_id<<" died, so we became sad"<<endl;
-			exit(0);
-		}
+		me->setProbs(path_msg->probs);
 		canMove = true;
 
 	}
@@ -69,20 +66,22 @@ void moveRobot::publishStep(){
 
 void moveRobot::start(){
 	publishStep();
-	cout<<"first_location"<<endl;
+	
 	while (true) {
 		ros::spinOnce();
 		if(canMove){
 		
 			vector<myTuple*> path = me->getPath();
 			int size = path.size();
-
+			if(size == 1){cout<<me->getLocation()->returnFirst()<<","<<me->getLocation()->returnSecond()<<endl;}
 			if(size>1 && path[0]->returnFirst()== me->getLocation()->returnFirst() && path[0]->returnSecond()== me->getLocation()->returnSecond()){
-		
-				cout<<"location: "<<me->getLocation()->returnFirst()<<"."<<me->getLocation()->returnSecond()<<endl;
 				me->move();
-				cout<<"nlocation: "<<me->getLocation()->returnFirst()<<"."<<me->getLocation()->returnSecond()<<endl;
 				moveToNext(path[0], path[1]);
+				if(!me->imAlive()){
+					publishStep();
+					//cout<"robot "<< robot_id <<" dying..."<<endl;
+					exit(0);
+				}
 				publishStep();
 				ros::spinOnce();
 			}else{
@@ -105,11 +104,7 @@ void moveRobot::start(){
 		 while (ros::ok()) {
 		 	if (abs(currentLocationY - goal) < placeTol) {break;}
 		 	geometry_msgs::Twist msg;
-		 	if (d == DOWN) {
-		 		msg.linear.x = 0.2;
-		 	} else {
-		 		msg.linear.x = -0.2;
-		 	}
+		 	msg.linear.x = 0.2;
 		 	////debug code
 		 	//cout << " need to dist " << goal << " current dist " << currentLocationY << endl;
 		 	////debug code

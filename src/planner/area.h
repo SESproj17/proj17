@@ -25,6 +25,7 @@ public:
 	void changeState(AreaState newState);
 	AreaState getState();
 	bool isCovered();
+	void print();
 };
 
 #endif

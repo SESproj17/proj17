@@ -14,10 +14,12 @@ void cell::setArea(subArea* givenArea){
 	////debug code
 	//cout<< "cell::setArea: givenArea level"<< givenArea->getLevel()<<endl;
 	////debug code
-	this->area = givenArea;
-	////debug code
-	//cout<< "cell::setArea: localarea level"<< this->area->getLevel()<<endl;
-	////debug code
+	this->myArea = givenArea;
+	//debug code
+	if (this->location->returnFirst() <4 && this->location->returnSecond() <4) {		
+	}
+
+	//debug code
 }
 //return the probability of the cell
 float cell::getProb() {return this->prob;}
@@ -38,28 +40,20 @@ State cell::getState() {return this->myState;}
 
 //if some robot walk on this cell mark it.
 void cell::changeState() {
+	
 	this->myState = Visited;
-	//debug code
-	cout<< "cell::changeState: before notifyVisitedCell"<< endl;
-	cout<< "cell::changeState: is area exist??: "<< this->area->getLevel() << "so it is.."<<endl;
-	//debug code
+	this->myArea->notifyVisitedCell();
 
-	this->area->notifyVisitedCell();
-
-	//debug code
-	cout<< "cell::changeState: after notifyVisitedCell"<< endl;
-	//debug code
 }
 
-//flip coin and check if the robot that move on this cell died or not.
-bool cell::imAlive() {
-	srand(time(NULL));
-	int x;float y;
-	x = rand()%11;
-	y = float(x)/10;
-	if (y > this->prob) {return true;}
-	return false;
-}
+
 void cell::setProb(float p) {
 	this->prob = p;
+}
+
+void cell::setLevel(int level){
+	this->level = level;
+}
+int cell::getLevel(){
+	return this->level;
 }

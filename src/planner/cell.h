@@ -17,19 +17,21 @@ private:
 	myTuple* location;
 	int id;
 	State myState;
-	subArea* area;
+	subArea* myArea;
+	int level;
 
 public:
 	cell(myTuple* givenLocation,double givenProb,int givenId) ;
 	void setArea(subArea* givenArea);
 	float getProb();
 	myTuple getLocation();
-	bool imAlive();
 	int getId();
 	bool isEqual(cell* other);
 	State getState();
 	void changeState();
 	void setProb(float p);
+	void setLevel(int level);
+	int getLevel();
 };
 
 

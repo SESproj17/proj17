@@ -160,6 +160,7 @@ pathCell* grid::getMinCost(vector<pathCell*> thisCells) {
     float min = rows*cols;
     pathCell* current = NULL;
     for (int i = 0; i < thisCells.size(); ++i) {
+        if (thisCells[i]->getProb() == 1.0) { continue; }
         if (thisCells[i]->getCost() <= min && thisCells[i]->getCost() != -1.0) {
             min = thisCells[i]->getCost();
             current = thisCells[i];
@@ -198,16 +199,28 @@ void grid::reduceMap() {
     for (int i = 0; i < rows; i += blockSize) {
         for (int j = 0; j < cols; j+= blockSize) {
             newGrid[a][b] = myGrid[i][j] + 0.01;
-            cout << newGrid[a][b] << " ";
+            
             b++; 
        }
        b = 0; 
        a++;
-       cout << endl;
+
     }
     this->myGrid = newGrid;
     this->rows = newHeight;
     this->cols = newWidth;
+    for (int i = 0; i < rows; i++) {
+        for (int j = 0; j < cols; j++) {
+            int temp = myGrid[i][j]*100;
+            int temp1 = temp%10;
+            if (temp1 != 0) {
+                temp = temp + (10 - temp1);
+            }
+            myGrid[i][j] = ((float)temp) / 100.0;
+            cout <<  myGrid[i][j] << " ";
+       }
+        cout << endl;
+    }
     cout << " ROWSSSSSS " << rows << " COLSSSS " << cols << endl;
 }
 

@@ -22,9 +22,11 @@ private:
 	float prob;
 	int myLevel;
 	AreaState state;
-	int unvisited;
+	int notFoundYet;
 	
 public:
+	int getLeftCells();
+	void print();
 	subArea(vector<vector <pathCell*> > givenCells,float givenProb,int lvl);
 	subArea(vector<pathCell* > newCells,float givenProb,int lvl);
 	vector<pathCell*> getCells();
