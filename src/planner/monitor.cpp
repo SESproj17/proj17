@@ -150,7 +150,6 @@ void stepCallback(const ses::step::ConstPtr& step_msg){
 	
 	c->changeState();
 	if (state == dead) {
-		cout<<"enterde"<<endl;
 		c->setProb(1.0);
 		al->bury(robot_id);
 		bury(robot_id);

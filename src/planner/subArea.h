@@ -8,6 +8,7 @@
 #include "area.h"
 #include "grid.h"
 #include "safestPath.h"
+#include <stack>
 
 
 using namespace std;
@@ -38,10 +39,10 @@ public:
 	pathCell* getCellAt(int i,int j);
 	float getProb();
 	int getLevel();
+	vector<subArea*> dfs();
 
 	void changeState(AreaState newState);
 	AreaState getState();
-	
 	void notifyVisitedCell();	
 };
 

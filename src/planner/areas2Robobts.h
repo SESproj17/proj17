@@ -42,6 +42,7 @@ public:
 	vector<subArea*> statrAllocation(vector<myTuple> startLocs);
 	vector<pathCell*> getSafestPath(myTuple robiLocation, subArea* area);
 	subArea* lookForNewArea(myTuple location);
+	void addSplited(subArea* oldArea, vector<subArea*> newSplitedAreas);
 };
 
 

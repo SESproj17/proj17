@@ -20,6 +20,70 @@ subArea::subArea(vector<vector <pathCell*> > givenCells,float givenProb,int lvl)
 }
 
 
+//output : all the subareas of this area
+vector<subArea*> subArea::dfs(){
+    grid* g = grid::getInstance();
+    int rows = g->getRows();
+    int cols = g->getCols();
+    int i,j;
+    vector<subArea*> connectedList;
+    vector<bool> visited(rows*cols, false);
+    for(i = 0;i <rows;i++){
+        for(j = 0;j<cols;j++){
+            pathCell* s = g->getCellAt(i,j);
+            if(s != NULL && s->getState() == NotVisited && !visited[i*rows + j]){
+                stack<pathCell*> stack;
+                vector<vector<pathCell*> > subA(rows,vector<pathCell*>(cols, NULL));
+                stack.push(s);
+                while (!stack.empty())
+                { 
+                    cout<<i<<" "<<j<<endl;
+                    s = stack.top();
+                    stack.pop();
+                    int x = s->getLocation().returnFirst(),y = s->getLocation().returnSecond();
+                    if (!visited[x*rows + y]){
+                        subA[x][y] = g->getCellAt(x,y);
+                        visited[x*rows + y] = true;
+                    }
+                    //go over the neighbours if some of them are 
+                    //not visited push them into the stack
+                    vector<pathCell*>neib = s->getNeighbors();
+                    //cout<<"sizeOfneibs: "<<neib.size()<<endl;
+                    for (int i =0; i< neib.size();i++){
+                        int first,second;
+                        myTuple mt = neib[i]->getLocation();
+                        first = mt.returnFirst();
+                        second = mt.returnSecond();
+                        if(!visited[first*rows + second] && neib[i]->getState() == NotVisited){
+                            stack.push(neib[i]);
+                        }
+                    }
+                    //cout<<"sizeOstack: "<<stack.size()<<endl;
+                    //exit(0);
+                }
+                //create an area and add it to the vector
+                subArea* connectedArea = new subArea(subA,prob,myLevel);
+                connectedArea->changeState(NotAssigned);
+
+                vector<pathCell*> cells = connectedArea->getCells();
+                for (int k = 0; k < cells.size(); ++k)
+                {
+                    int xRows = cells[k]->getLocation().returnFirst();
+                    int yCols = cells[k]->getLocation().returnSecond();
+                    pathCell* myCell = g->getCellAt(xRows,yCols);
+                
+                    myCell->setArea(connectedArea);
+                }
+                connectedList.push_back(connectedArea);
+            }
+        }
+    }
+    return connectedList;
+}
+
+
+
+
 void subArea::print() {
     for (int i = 0; i < myCells.size(); ++i)
     {

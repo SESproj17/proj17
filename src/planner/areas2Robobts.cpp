@@ -19,12 +19,11 @@ vector<pathCell*> areas2Robobts::getSafestPath(myTuple robiLocation, subArea* ar
 
 subArea* areas2Robobts::lookForNewArea(myTuple location){
 	vector<subArea*> a = sortedAvailableAreasPerLocation(location, NotAssigned);
-	cout<<"list of areas to robot: "<<a.size()<<endl;
+	//cout<<"list of areas to robot: "<<a.size()<<endl;
 	if(a.size()>0){
 		return a[0];
 	}
-	subArea* area = findAreaToShare();
-	return area;	
+	return NULL;	
 }
 
 vector<subArea*> areas2Robobts::statrAllocation(vector<myTuple> teamStartLocations)
@@ -33,15 +32,15 @@ vector<subArea*> areas2Robobts::statrAllocation(vector<myTuple> teamStartLocatio
 	vector<subArea*> sortedAreas;
 	for(int i = 0;i < teamStartLocations.size();i++){	
 		sortedAreas = sortedAvailableAreasPerLocation(teamStartLocations[i], NotAssigned);
-		cout<<"statrAllocation::size of sorted: "<<sortedAreas.size()<<endl;			
+		//cout<<"statrAllocation::size of sorted: "<<sortedAreas.size()<<endl;			
 		for(int j = 0;j < sortedAreas.size();j++){//check if area is not too dense with robots
 			subArea* a = sortedAreas[j];
 			if(a->getinitialRobots().size()*D <= a->getCells().size()){// after 
 				a->addRobot(i);
-				cout<<"statrAllocation::a assigned "<<a->getLevel()<<endl;
+				//cout<<"statrAllocation::a assigned "<<a->getLevel()<<endl;
 				break;
 			}
-			cout<<"statrAllocation::need to not beeing here "<<endl;
+			//cout<<"statrAllocation::need to not beeing here "<<endl;
 		}
 	}
 
@@ -52,8 +51,15 @@ vector<subArea*> areas2Robobts::statrAllocation(vector<myTuple> teamStartLocatio
 	for(int i = 0;i <sortedAreas.size();i++){
 		subArea* a = sortedAreas[i];
 		vector<int> idsRobotsOfA= a->getinitialRobots();
-		if(idsRobotsOfA.size()>1){	
-			vector<subArea*> splited = split(idsRobotsOfA,a);
+		if(idsRobotsOfA.size()>1){
+			vector<myTuple> locations(idsRobotsOfA.size(),myTuple(-1,-1));
+			for (int i = 0; i < locations.size(); ++i)
+			{
+				locations[i] = teamStartLocations[i];
+			}
+			splitBetweenRobots sbr(a, locations);	
+			vector<subArea*> splited  = sbr.hungarianMethod();
+			addSplited(a,splited);
 			for (int i = 0; i < idsRobotsOfA.size(); ++i)
 			{
 				assignment[idsRobotsOfA[i]] = splited[i];
@@ -61,10 +67,10 @@ vector<subArea*> areas2Robobts::statrAllocation(vector<myTuple> teamStartLocatio
 		} else if (idsRobotsOfA.size()==1){
 			int id = a->getinitialRobots()[0];
 			assignment[id] = a;
-			cout<<"statrAllocation::a->level: "<<assignment[id]->getLevel()<<endl;
+			//cout<<"statrAllocation::a->level: "<<assignment[id]->getLevel()<<endl;
 		}
 	}
-	cout<<"statrAllocation::size of assignment: "<<assignment.size()<<endl;
+	//cout<<"statrAllocation::size of assignment: "<<assignment.size()<<endl;
 	return assignment;
 }
 
@@ -93,23 +99,17 @@ vector<subArea*> areas2Robobts::getSafeAreas(){
 	return areas[i];
 }
 
-vector<subArea*> areas2Robobts::split(vector<int> robots, subArea* areaToSplit){
-	areaToSplit->changeState(Covered);
-	splitBetweenRobots sbr(robots, areaToSplit);
-	vector<subArea*> splited = sbr.split();
-	for (int i = 0; i < splited.size(); ++i)
+/*
+input: area(oldArea) that splited, new sub areas
+the function marked the oldArea as covered and add the new areas to the pool
+*/
+void areas2Robobts::addSplited(subArea* oldArea, vector<subArea*> newSplitedAreas){
+	oldArea->changeState(Covered);
+	for (int i = 0; i < newSplitedAreas.size(); ++i)
 	{
-		add(splited[i]);
+		add(newSplitedAreas[i]);
 	}
-	return splited;
 }
-
-
-
-subArea* areas2Robobts::findAreaToShare(){
-
-} 
-
 
  costedPath* areas2Robobts::findSafestPath(myTuple robiLocation, subArea* area){
  	vector<pathCell*> cells = area->getCells();

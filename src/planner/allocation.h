@@ -29,6 +29,7 @@ public:
 	vector<pathCell*> allocateStartArea(int robot_id);
 	vector<pathCell*> allocateNextArea(myTuple location, int robot_id);
 	vector<pathCell*> areaCoverage(myTuple location,int robot_id);
+	vector<pathCell*> findAreaToShare(myTuple mylocation, myTuple otherLocation,int myId, int otherId);
 };
 
 #endif
