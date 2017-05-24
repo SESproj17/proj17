@@ -118,20 +118,16 @@ vector<pathCell*> subArea::coverge(myTuple start){
         exit(0);
         safestPath sp(notAppearsAtPath);
         vector<pathCell*> temp = sp.find(start)->getPath();
-         path.insert(path.end(), temp.begin(), temp.end());
-          cout<<"size of path: "<<path.size()<<endl;
+        path.insert(path.end(), temp.begin(), temp.end());
+        cout<<"size of path: "<<path.size()<<endl;
         cout<<"size of temp: "<<temp.size()<<endl;
         temp[temp.size()-1]->setAppear(true);
-        temp.clear();
-        for (int i = 0; i < notAppearsAtPath.size(); ++i)
-        {
-            if(!(notAppearsAtPath[i]->wasInPath())){
-                temp.push_back(notAppearsAtPath[i]);
-            }
-        }
-        notAppearsAtPath = temp;
+        splitBetweenRobots* sbr = new splitBetweenRobots();
+        int index = sbr->findLocation(temp[temp.size()-1], notAppearsAtPath);
+        notAppearsAtPath.erase(notAppearsAtPath.begin() + index);
         cout<<" b size of notAppearsAtPath: "<<notAppearsAtPath.size()<<endl; 
-        start = path[path.size()-1]->getLocation();  
+        start = temp[temp.size()-1]->getLocation();  
+        temp.clear();
     }
     return path;
 }

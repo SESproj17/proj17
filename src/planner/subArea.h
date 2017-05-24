@@ -9,6 +9,7 @@
 #include "grid.h"
 #include "safestPath.h"
 #include <stack>
+#include "splitBetweenRobots.h"
 
 
 using namespace std;

@@ -18,10 +18,11 @@ private:
 
 	vector<vector<pathCell*> > graphPartition(vector<pathCell*>graph,int k);
 	vector<vector<pathCell*> > vectorToMatrix(vector<pathCell*> vec);
-	int findLocation(pathCell* cell, vector<pathCell*>graph);
 	vector<subArea*> convert(vector<vector<int> > HungarianOutput, vector<subArea*>);
 
 public:
+	splitBetweenRobots();
+	int findLocation(pathCell* cell, vector<pathCell*>graph);
 	splitBetweenRobots(subArea* areaToSplit, vector<myTuple> locations);
 	vector<subArea*> split();
 	vector<subArea*> hungarianMethod();

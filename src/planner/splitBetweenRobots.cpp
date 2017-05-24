@@ -8,6 +8,8 @@ splitBetweenRobots::splitBetweenRobots(subArea* areaToSplit, vector<myTuple> loc
 	vector<myTuple> robotLocations = locations;
 }
 
+splitBetweenRobots::splitBetweenRobots(){}
+
 //returns all the subareas of one sub area that was splited
 vector<subArea*> splitBetweenRobots::split(){
 	int k = initialArea->getinitialRobots().size();
