@@ -11,6 +11,7 @@
 #include "costedArea.h"
 #include "algo1.h"
 #include "splitBetweenRobots.h"
+#include "safestPath.h"
 using namespace std;
 
 
@@ -34,8 +35,6 @@ private:
 	
 	vector<subArea*> getSafeAreas();
 	costedPath* findSafestPath(myTuple robiLocation, subArea* area);
-	costedPath* min(vector<costedPath*> paths);
-	float price(vector<pathCell*> path);
 	
 	
 public: 

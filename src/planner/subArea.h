@@ -7,6 +7,7 @@
 #include "pathCell.h"
 #include "area.h"
 #include "grid.h"
+#include "safestPath.h"
 
 
 using namespace std;

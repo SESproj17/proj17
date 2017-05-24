@@ -34,4 +34,4 @@ vector<pathCell*> pathCell::getNeighbors() { return this->neighbors;}
 
 bool pathCell::wasInPath(){this->wasInCoveragePath == true;}
 
-void pathCell::setAppear(){this->wasInCoveragePath = true;}
+void pathCell::setAppear(bool v){this->wasInCoveragePath = v;}

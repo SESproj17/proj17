@@ -77,11 +77,11 @@ void moveRobot::start(){
 			if(size>1 && path[0]->returnFirst()== me->getLocation()->returnFirst() && path[0]->returnSecond()== me->getLocation()->returnSecond()){
 				me->move();
 				moveToNext(path[0], path[1]);
-				if(!me->imAlive()){
+				/*if(!me->imAlive()){
 					publishStep();
 					//cout<"robot "<< robot_id <<" dying..."<<endl;
 					exit(0);
-				}
+				}*/
 				publishStep();
 				ros::spinOnce();
 			}else{

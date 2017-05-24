@@ -20,7 +20,7 @@ public:
 
 	void addNeighbors(pathCell* neigh);
 	bool wasInPath();
-	void setAppear();
+	void setAppear(bool v);
 	pathCell* getLastCell();
 	float getCost();
 	void setLastPathCell(pathCell* lastOne);

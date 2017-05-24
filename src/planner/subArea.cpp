@@ -45,18 +45,19 @@ vector<pathCell*> subArea::coverge(myTuple start){
     for (int i = 0; i < cells.size(); ++i)
     {
         if (cells[i]->getState()== NotVisited){
+            cells[i]->setAppear(false);
             notAppearsAtPath.push_back(cells[i]);
         }
     }
     while(notAppearsAtPath.size()){
-        myTuple dest = notAppearsAtPath[0]->getLocation();
-       vector<pathCell*> temp = g->dijkstra(start.returnFirst(),start.returnSecond(),dest.returnFirst(),dest.returnSecond());
-        path.insert(path.end(), temp.begin(), temp.end());
-        notAppearsAtPath.erase(notAppearsAtPath.begin());
-        for (int i = 0; i < temp.size(); ++i)
-        {
-            temp[i]->setAppear();
-        }
+        cout<<" b size of notAppearsAtPath: "<<notAppearsAtPath.size()<<endl;
+        exit(0);
+        safestPath sp(notAppearsAtPath);
+        vector<pathCell*> temp = sp.find(start)->getPath();
+         path.insert(path.end(), temp.begin(), temp.end());
+          cout<<"size of path: "<<path.size()<<endl;
+        cout<<"size of temp: "<<temp.size()<<endl;
+        temp[temp.size()-1]->setAppear(true);
         temp.clear();
         for (int i = 0; i < notAppearsAtPath.size(); ++i)
         {
@@ -64,7 +65,8 @@ vector<pathCell*> subArea::coverge(myTuple start){
                 temp.push_back(notAppearsAtPath[i]);
             }
         }
-        notAppearsAtPath = temp; 
+        notAppearsAtPath = temp;
+        cout<<" b size of notAppearsAtPath: "<<notAppearsAtPath.size()<<endl; 
         start = path[path.size()-1]->getLocation();  
     }
     return path;
