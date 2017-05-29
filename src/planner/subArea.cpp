@@ -113,21 +113,23 @@ vector<pathCell*> subArea::coverge(myTuple start){
             notAppearsAtPath.push_back(cells[i]);
         }
     }
+    bool first = true;
     while(notAppearsAtPath.size()){
-        cout<<" b size of notAppearsAtPath: "<<notAppearsAtPath.size()<<endl;
-        exit(0);
+        //cout<<" b size of notAppearsAtPath: "<<notAppearsAtPath.size()<<endl;
         safestPath sp(notAppearsAtPath);
         vector<pathCell*> temp = sp.find(start)->getPath();
-        path.insert(path.end(), temp.begin(), temp.end());
-        cout<<"size of path: "<<path.size()<<endl;
-        cout<<"size of temp: "<<temp.size()<<endl;
+        if(first){path.insert(path.end(), temp.begin(), temp.end());}
+        else{path.insert(path.end(), temp.begin()+1, temp.end());}   
+        //cout<<"size of path: "<<path.size()<<endl;
+        //cout<<"size of temp: "<<temp.size()<<endl;
         temp[temp.size()-1]->setAppear(true);
         splitBetweenRobots* sbr = new splitBetweenRobots();
         int index = sbr->findLocation(temp[temp.size()-1], notAppearsAtPath);
         notAppearsAtPath.erase(notAppearsAtPath.begin() + index);
-        cout<<" b size of notAppearsAtPath: "<<notAppearsAtPath.size()<<endl; 
+        //cout<<" b size of notAppearsAtPath: "<<notAppearsAtPath.size()<<endl; 
         start = temp[temp.size()-1]->getLocation();  
         temp.clear();
+        first = false;
     }
     return path;
 }

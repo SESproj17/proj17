@@ -26,8 +26,11 @@ int main(int argc, char **argv)
         ROS_ERROR("You must specify robot id.");
         return -1;
     }
-
-    char *id = argv[1];
+    char *lizinumber = argv[1];
+    string lizi( lizinumber );
+    cout << "RobotMain::main liziNumber = " << lizi << endl;
+    
+    char *id = argv[2];
     robot_id = atoi(id);
 
 
@@ -35,10 +38,10 @@ int main(int argc, char **argv)
     node_name += id;
 
 
-    char *x = argv[2];
+    char *x = argv[3];
     firstStart = atoi(x);
 
-    char *y = argv[3];
+    char *y = argv[4];
     secondStart = atoi(y);
 
 
@@ -56,13 +59,13 @@ int main(int argc, char **argv)
         ROS_ERROR("The robot's ID must be an integer number between 0 an 19");
         return -1;
     }
-    ROS_INFO("Starting robot %d??", robot_id);
+    ROS_INFO("Starting robot %d", robot_id);
 
     publishReadyStatus();
 
     waitForTeam();
 
-    moveRobot move(firstStart,secondStart,robot_id);
+    moveRobot move(firstStart,secondStart,robot_id,lizi);
     move.start();
 
 

@@ -1,15 +1,23 @@
 #include "moveRobot.h"
 
 
-moveRobot::moveRobot(int firstStart, int secondStart, int robot_id){
+moveRobot::moveRobot(int firstStart, int secondStart, int givenrobot_id, string givenLizi){
 	canMove = false;
 	ros::NodeHandle  nh;
-	publisher  = nh.advertise<geometry_msgs::Twist>("/lizi_1/diff_driver/command", 10);	
+	this->lizi = givenLizi;
+	//cout << "moveRobot::moveRobot liziNumber = " << lizi << endl;
+	//cout << "moveRobot::moveRobot robot_id = " << givenrobot_id << endl;
+	publisher  = nh.advertise<geometry_msgs::Twist>("/lizi_"+lizi+"/diff_driver/command", 10);	
 	steps_pub = nh.advertise<ses::step>("steps", 10);
 	path_sub = nh.subscribe("paths", 1, &moveRobot::pathCallback, this);
 	laserSub = nh.subscribe("scan", 1, &moveRobot::scanCallback, this);
 	me = new robot(firstStart, secondStart);
-	robot_id = robot_id;
+	robot_id = givenrobot_id;
+	//cout << "moveRobot::moveRobot robot_id = " << robot_id << endl;
+	getPose();
+	nh.getParam("startX",this->startPoseX);
+	nh.getParam("startY",this->startPoseY);
+	
 }
 
 // Process the incoming laser scan message
@@ -35,13 +43,15 @@ void moveRobot::scanCallback(const sensor_msgs::LaserScan::ConstPtr& scan)
 }
 	
 void moveRobot::pathCallback(const ses::Path::ConstPtr& path_msg){
-	cout<<"robot catched a path!"<<endl;
+	
 	if(robot_id == path_msg->robot_id){
+		if(robot_id == 0){
+		//cout<<robot_id<<"path: "<<path_msg->path<<endl;
 		me->setState((robotState)path_msg->state);
 		me->setPath(path_msg->path);
 		me->setProbs(path_msg->probs);
 		canMove = true;
-
+		}
 	}
 }
 
@@ -70,10 +80,15 @@ void moveRobot::start(){
 	while (true) {
 		ros::spinOnce();
 		if(canMove){
-		
+			
 			vector<myTuple*> path = me->getPath();
 			int size = path.size();
 			if(size == 1){cout<<me->getLocation()->returnFirst()<<","<<me->getLocation()->returnSecond()<<endl;}
+			int x = (path[0]->returnFirst() == me->getLocation()->returnFirst());
+			int y = (path[0]->returnSecond()== me->getLocation()->returnSecond());
+			//cout<<"x "<<path[0]->returnFirst()<<",y "<<path[0]->returnSecond()<<endl;
+			//cout<<"x "<< me->getLocation()->returnFirst()<<",y "<<me->getLocation()->returnSecond()<<endl;
+			
 			if(size>1 && path[0]->returnFirst()== me->getLocation()->returnFirst() && path[0]->returnSecond()== me->getLocation()->returnSecond()){
 				me->move();
 				moveToNext(path[0], path[1]);
@@ -98,30 +113,42 @@ void moveRobot::start(){
 	ros::Rate rate(40);
 	if (d == UP || d == DOWN) {
 		 currentPlace = currentLocationY;
-		 if (d == DOWN) {dir = -1;}
-		 goal = currentPlace + dir*DX;
+		 if (d == DOWN) {
+		 	//cout<<"down"<<endl;
+		 	dir = -1;
+		 }else{
+		 	//cout<<"up"<<endl;
+		 }
+
+		 goal = me->getLocation()->returnFirst()*DX*dir + this->startPoseY;
 
 		 while (ros::ok()) {
 		 	if (abs(currentLocationY - goal) < placeTol) {break;}
 		 	geometry_msgs::Twist msg;
 		 	msg.linear.x = 0.2;
 		 	////debug code
-		 	//cout << " need to dist " << goal << " current dist " << currentLocationY << endl;
+		 	//cout << " need to dist " << goal << " current dist " << currentLocationY << " LIZI NAME " << lizi << endl;
 		 	////debug code
 		 	publisher.publish(msg);
 		 	getPose();
 		 }
 	} else {
 		 getPose();
-		 if (d == LEFT) { dir = -1;}
-		 goal = currentLocationX + dir*DXHorizontal;
+		 if (d == LEFT) {
+		 	 dir = -1;
+		 	}
+		 //cout << "step:: startPoseX " << startPoseX << endl;
+		 //cout << "step:: DX is " << me->getLocation()->returnSecond() << endl;
+		 goal = this->startPoseX + (me->getLocation()->returnSecond()+1)*DXHorizontal;
 		 while (ros::ok()) {
 		 	if (abs(currentLocationX - goal) < placeTol) {break;}
 		 	geometry_msgs::Twist msg;
 		 	if (d == RIGHT) {
+		 		//cout<<"right"<<endl;
 		 		msg.linear.x = 0.2;
 		 	} else {
-		 		msg.linear.x = -0.2;
+		 		 //cout<<"left"<<endl;
+		 		msg.linear.x = 0.2;
 		 	}
 		 	////debug code
 		 	//cout << " need to dist " << goal << " current dist " << currentLocationX << endl;
@@ -142,11 +169,12 @@ void moveRobot::getPose() {
 	tf::TransformListener listener;
 	tf::StampedTransform transform;
 
-	listener.waitForTransform("/map", "/lizi_1/base_link", ros::Time(0), ros::Duration(10.0) );
+
+	listener.waitForTransform("/map", "/lizi_"+lizi+"/base_link", ros::Time(0), ros::Duration(10.0) );
 
     try {
     	//listener.waitForTransform("/map", "/" + robotName + "/base_link", ros::Time(0), ros::Duration(60.0));
-        listener.lookupTransform("/map",  "/lizi_1/base_link", ros::Time(0), transform);
+        listener.lookupTransform("/map",  "/lizi_"+lizi+"/base_link", ros::Time(0), transform);
         currentLocationX = transform.getOrigin().x();
         currentLocationY = transform.getOrigin().y();
         currentAngle = tf::getYaw(transform.getRotation());

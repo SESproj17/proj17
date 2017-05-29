@@ -32,7 +32,7 @@
       <collision name="collision">
         <geometry>
           <box>
-            <size>0.15 0.15 0.002</size>
+            <size>0.1 0.1 0.002</size>
             <!-- SIZE OF THE MARKER + MARGIN -->
           </box>
         </geometry>

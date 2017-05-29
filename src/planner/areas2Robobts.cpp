@@ -19,7 +19,7 @@ vector<pathCell*> areas2Robobts::getSafestPath(myTuple robiLocation, subArea* ar
 
 subArea* areas2Robobts::lookForNewArea(myTuple location){
 	vector<subArea*> a = sortedAvailableAreasPerLocation(location, NotAssigned);
-	//cout<<"list of areas to robot: "<<a.size()<<endl;
+	cout<<"nuber of safest unassiged areas: "<<a.size()<<endl;
 	if(a.size()>0){
 		return a[0];
 	}
@@ -28,16 +28,19 @@ subArea* areas2Robobts::lookForNewArea(myTuple location){
 
 vector<subArea*> areas2Robobts::statrAllocation(vector<myTuple> teamStartLocations)
 {	
+
 	//assign robots in areas
 	vector<subArea*> sortedAreas;
+	cout<<"statrAllocation::size of teamStartLocations: "<<teamStartLocations.size()<<endl;
 	for(int i = 0;i < teamStartLocations.size();i++){	
+		cout<<"here"<<endl;
 		sortedAreas = sortedAvailableAreasPerLocation(teamStartLocations[i], NotAssigned);
-		//cout<<"statrAllocation::size of sorted: "<<sortedAreas.size()<<endl;			
+		cout<<"statrAllocation::size of sorted: "<<sortedAreas.size()<<endl;			
 		for(int j = 0;j < sortedAreas.size();j++){//check if area is not too dense with robots
 			subArea* a = sortedAreas[j];
 			if(a->getinitialRobots().size()*D <= a->getCells().size()){// after 
 				a->addRobot(i);
-				//cout<<"statrAllocation::a assigned "<<a->getLevel()<<endl;
+				cout<<"statrAllocation::a assigned "<<a->getLevel()<<endl;
 				break;
 			}
 			//cout<<"statrAllocation::need to not beeing here "<<endl;
@@ -70,7 +73,7 @@ vector<subArea*> areas2Robobts::statrAllocation(vector<myTuple> teamStartLocatio
 			//cout<<"statrAllocation::a->level: "<<assignment[id]->getLevel()<<endl;
 		}
 	}
-	//cout<<"statrAllocation::size of assignment: "<<assignment.size()<<endl;
+	cout<<"statrAllocation::size of assignment: "<<assignment.size()<<endl;
 	return assignment;
 }
 

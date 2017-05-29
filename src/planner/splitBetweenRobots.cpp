@@ -156,7 +156,7 @@ vector<subArea* > splitBetweenRobots::hungarianMethod(){
 }
 
 //covert given output from the hungarian method to an assignment
-vector<subArea*> splitBetweenRobots::convert(vector<vector<int> > HungarianOutput, vector<subArea*>){
+vector<subArea*> splitBetweenRobots::convert(vector<vector<int> > HungarianOutput, vector<subArea*> areas){
 	cout<<"Hungarian Output:"<<endl;
 	for (int i = 0; i < HungarianOutput.size(); ++i)
 	{
@@ -169,12 +169,3 @@ vector<subArea*> splitBetweenRobots::convert(vector<vector<int> > HungarianOutpu
 	cout<<"more implementetion is needed!"<<endl;
 	exit(0);
 }
-
-
-
-
-
-
-
-
-

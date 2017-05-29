@@ -24,19 +24,21 @@ enum Direction {RIGHT,UP,LEFT,DOWN};
 class moveRobot 
 {
 public:
-	moveRobot(int firstStart, int secondStart, int robot_id);
+	moveRobot(int firstStart, int secondStart, int robot_id, string lizi);
 	void start();
 	
 private:
 
 	ros::Subscriber poseSubscriber;
-
 	ros::Publisher publisher;
 	ros::Subscriber path_sub;
 	ros::Publisher steps_pub;
 	ros::Subscriber laserSub;
 
+	string lizi;
 
+	double startPoseX;
+	double startPoseY;
 
 	robot* me;
 	bool canMove;
@@ -47,10 +49,10 @@ private:
     const static double MAX_SCAN_ANGLE = +30.0/180*M_PI;
     const static float MIN_DIST_FROM_OBSTACLE = 0.2;
 
-	const static double placeTol = 0.03;
+	const static double placeTol = 0.041;
 	const static double angularTolerance  = 0.05;
-	const static double DX = 0.9;
-	const static double DXHorizontal = 1;
+	const static double DX = 1.6;
+	const static double DXHorizontal = 2.265;
 	const static double angularSpeed = 0.25;
 
 	double currentLocationX;

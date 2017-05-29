@@ -19,8 +19,8 @@ enum robotState {idle,traveling,covering,done,dead};
 unsigned int teamSize;
 unsigned int robotsCount = 0;
 bool robotsReady[MAX_ROBOTS_NUM];
+vector<myTuple> locs(MAX_ROBOTS_NUM,myTuple(-1,-1));
 vector<int> ids;
-vector<myTuple> locs;
 allocation* al;
 int sekelton = -1;
 
@@ -79,17 +79,24 @@ void teamStatusCallback(const ses::RobotStatus::ConstPtr& status_msg)
 	if (!robotsReady[robot_id]) {
 		ROS_INFO("Robot %d is ready!\n", robot_id);
 		robotsReady[robot_id] = true;
-		robotsCount++;
-		ids.push_back(robot_id);
-		cout<<"callBack: number of robots: "<<ids.size()<<endl;
 		myTuple m(x,y);
-		locs.push_back (m);
+		locs[robot_id] = m;
+		robotsCount++;
+		
 		
 		if (robotsCount == teamSize) {
+
 			ROS_INFO("All robots GO!");
+			vector<myTuple> locations(teamSize,myTuple(-1,-1));
+			vector<int> team(teamSize,-1);
+			for (int i = 0; i < teamSize; ++i)
+			{
+				locations[i] = locs[i];
 
-		 	al = new allocation(ids,locs);
+				team[i] = i;
+			}
 
+		 	al = new allocation(team,locations);
 			ses::RobotStatus status_msg;
 			status_msg.header.stamp = ros::Time::now();
 			status_msg.header.frame_id = "monitor";
@@ -107,7 +114,6 @@ void publishPath(int robot_id,robotState state, string path,string givenprobs){
 	path_msg.robot_id = robot_id;
 	path_msg.path = path;
 	path_msg.state = state;
-	cout<<"??; "<<givenprobs<<endl;
 	path_msg.probs = givenprobs;
 
 	sleep(1.0);
@@ -117,12 +123,14 @@ void publishPath(int robot_id,robotState state, string path,string givenprobs){
 
 void stepCallback(const ses::step::ConstPtr& step_msg){
 
-	cout<<"monitor catched a step"<<endl;
+	
 
 	int robot_id = step_msg->robot_id;
 	robotState state = (robotState)step_msg->state;
 	grid* g = grid::getInstance();
 	pathCell* c = g->getCellAt(step_msg->first_location, step_msg->second_location);
+
+	cout<<"monitor::catched a step of "<<robot_id<<endl;
 	
 
 	//debug code
@@ -135,24 +143,27 @@ void stepCallback(const ses::step::ConstPtr& step_msg){
 	cout<< "monitor::state of the robot: "<< strstate<< endl;
 	//
 
-	//publish only if the status changed!
-	if(state == idle || state == done){//done-??????
-		vector<pathCell*> path = al->allocateStartArea(robot_id);
-		string probs = probs2str(path);
-		string newPath = path2str(path);
-		//debug code
-		cout<< "monitor::recomended path: "<< newPath << endl;
-		//debug code
-		
-		publishPath(robot_id,traveling,newPath,probs);
-		return;
-	}
-	
 	c->changeState();
 	if (state == dead) {
 		c->setProb(1.0);
 		al->bury(robot_id);
 		bury(robot_id);
+		
+	}
+
+	//publish only if the status changed!
+	if(state == idle || state == done){//done-??????
+		vector<pathCell*> path = al->allocateStartArea(robot_id);
+		if(path.size()==1){
+			path = al->areaCoverage(c->getLocation(),robot_id);
+		}
+			string probs = probs2str(path);
+			string newPath = path2str(path);
+			//debug code
+			cout<< "monitor::path for "<<robot_id<< ": "<< newPath << endl;
+			//debug code
+			publishPath(robot_id,covering,newPath,probs);
+			return;
 		
 	}
 	//cout << "monitor: is_the_last " << (int)step_msg->is_the_last << endl;
@@ -166,14 +177,14 @@ void stepCallback(const ses::step::ConstPtr& step_msg){
 				string probs = probs2str(path);
 				publishPath(robot_id,traveling,newPath,probs);
 				//debug code
-				cout<< "monitor::recomended path: "<< newPath << endl;
+				cout<< "monitor::path for "<<robot_id<< ": "<< newPath << endl;
 				//debug code
 				return;
 			}
 			newPath = path2str(path);
 			string probs = probs2str(path);
 			//debug code
-			cout<< "monitor::recomended path: "<< newPath << endl;
+			cout<< "monitor::path for "<<robot_id<< ": "<< newPath << endl;
 			//debug code
 			publishPath(robot_id,covering,newPath,probs);
 			return;
@@ -182,14 +193,14 @@ void stepCallback(const ses::step::ConstPtr& step_msg){
 			vector<pathCell*> path = al->allocateNextArea(c-> getLocation(), robot_id);
 			if(path.size() == 0){
 				//debug code
-				cout<< "monitor::recomended path: "<< "end" << endl;
+				cout<< "monitor::path for "<<robot_id<< ": "<< "end" << endl;
 				//debug code
 				publishPath(robot_id,done,"end","");
 			}
 			string newPath = path2str(path);
 			string probs = probs2str(path);
 			//debug code
-			cout<< "monitor::recomended path: "<< newPath << endl;
+			cout<< "monitor::path for "<<robot_id<< ": "<< newPath << endl;
 			//debug code
 			publishPath(robot_id,traveling,newPath,probs);
 			return;
@@ -198,13 +209,13 @@ void stepCallback(const ses::step::ConstPtr& step_msg){
 }
 
 void bury(int robot_id){
-	ids[robot_id] = sekelton;
+	/*ids[robot_id] = sekelton;
 	for (int i = 0; i < ids.size(); ++i)
 	{
 		if(ids[robot_id]!= sekelton){return;}
 	}
 	cout<<"my whole team killed :("<<endl<<"bye..."<<endl;
-	exit(0);
+	exit(0);*/
 
 }
 
