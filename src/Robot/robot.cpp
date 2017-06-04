@@ -29,7 +29,7 @@ void robot::setPath(string path){
 		this->path[i] = new myTuple(string2int(loc[0]),string2int(loc[1]));
 	}
 }
-/*
+
 void robot::setProbs(string probs){
 
 	vector<string> strProbs = split(probs, ' ');
@@ -39,7 +39,7 @@ void robot::setProbs(string probs){
 		this->probs[i] = strtof((strProbs[i]).c_str(),0);
 	}
 }
-*/
+
 void robot::setState(robotState state){
 	this->state = state;
 }

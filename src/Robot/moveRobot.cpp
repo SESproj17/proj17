@@ -47,10 +47,10 @@ void moveRobot::pathCallback(const ses::Path::ConstPtr& path_msg){
 	if(robot_id == path_msg->robot_id){
 		if(robot_id == 0){
 		//cout<<robot_id<<"path: "<<path_msg->path<<endl;
-		me->setState((robotState)path_msg->state);
-		me->setPath(path_msg->path);
-		//me->setProbs(path_msg->probs);
-		canMove = true;
+			me->setState((robotState)path_msg->state);
+			me->setPath(path_msg->path);
+			me->setProbs(path_msg->probs);
+			canMove = true;
 		}
 	}
 }
@@ -165,6 +165,79 @@ void moveRobot::start(){
  }
 
 
+// void moveRobot::stepUpDown(Direction d) {
+// 	getPose();
+
+
+// 	geometry_msgs::Twist rotateCommand;
+
+// 	// How fast will we update the robot's movement
+// 	ros::Rate rate(50);
+
+// 	// Rotate until the robot reaches the target angle
+// 	while (ros::ok() && abs(currentAngle - targetAngle) > angularTolerance * 50) {
+
+// 		// The robot can reach the LEFT direction from negative PI or positive PI
+// 		if (d == LEFT && (abs(currentAngle - (-M_PI)) <= angularTolerance * 50))
+// 		    break;
+
+// 		publisher.publish(rotateCommand);
+// 		rate.sleep();
+// 		getPose();
+// 	}
+
+// 	////debug code
+// 	//cout << "Angle refinement #1" << endl;
+// 	////debug code
+
+// 	// Slow the speed near the target
+// 	//rotateCommand.angular.z = turnLeft ? 0.1 * angularSpeed : -0.1 * angularSpeed;
+// 	rotateCommand.angular.z = turnLeft ? 0.5 * angularSpeed : -0.5 * angularSpeed;
+
+// 	while (ros::ok() && abs(currentAngle - targetAngle) > angularTolerance * 10) {
+// 		// The robot can reach the LEFT direction from negative PI or positive PI
+// 		if (d == LEFT && (abs(currentAngle - (-M_PI)) <= angularTolerance * 10))
+// 			break;
+			
+
+// 		publisher.publish(rotateCommand);
+// 		rate.sleep();
+// 		getPose();
+
+		
+// 	}
+// 	////debug code
+// 	//cout << "Angle refinement #2" << endl;
+// 	////debug code
+
+// 	// Further refine the angle
+// 	//rotateCommand.angular.z = turnLeft ? 0.05 * angularSpeed : -0.05 * angularSpeed;
+// 	while (ros::ok() && abs(currentAngle - targetAngle) > angularTolerance) {
+// 		// The robot can reach the LEFT direction from negative PI or positive PI
+// 		if (d == LEFT && (abs(currentAngle - (-M_PI)) <= angularTolerance))
+// 			break;
+		
+
+// 		publisher.publish(rotateCommand);
+// 		rate.sleep();
+// 		getPose();
+
+
+// 	}
+// 	////debug code
+// 	//cout << "Angle refinement #3" << endl;
+// 	////debug code
+
+
+// 	for (int i = 0; i < 20; i++) {
+// 		geometry_msgs::Twist stopCommand;
+// 		stopCommand.angular.z = 0;
+// 		publisher.publish(stopCommand);
+// 	}
+	
+// }
+
+
 void moveRobot::getPose() {
 	tf::TransformListener listener;
 	tf::StampedTransform transform;
@@ -191,13 +264,6 @@ void moveRobot::getPose() {
 	double targetAngle = directionAngles[d];
 	bool turnLeft;
 	getPose();
-
-	////debug code
-	//cout << "current " << currentAngle << endl;
-	////debug code
-
-	// Decide to which side to rotate - left or right by choosing the small angle
-	// bool turnLeft;
 	if (targetAngle - currentAngle > 0 && targetAngle - currentAngle < M_PI)
 		turnLeft = true;
 	else if (targetAngle - currentAngle < -M_PI)

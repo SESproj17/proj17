@@ -66,6 +66,7 @@ int main(int argc, char **argv)
     waitForTeam();
 
     moveRobot move(firstStart,secondStart,robot_id,lizi);
+    
     move.start();
 
 
