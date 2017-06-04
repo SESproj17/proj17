@@ -49,7 +49,7 @@ void moveRobot::pathCallback(const ses::Path::ConstPtr& path_msg){
 		//cout<<robot_id<<"path: "<<path_msg->path<<endl;
 		me->setState((robotState)path_msg->state);
 		me->setPath(path_msg->path);
-		me->setProbs(path_msg->probs);
+		//me->setProbs(path_msg->probs);
 		canMove = true;
 		}
 	}
