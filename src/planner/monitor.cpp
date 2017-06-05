@@ -38,6 +38,7 @@ void teamStatusCallback(const ses::RobotStatus::ConstPtr& status_msg);
 void stepCallback(const ses::step::ConstPtr& step_msg);
 //void publishPath(robotState state, string path, string area, int robot_id);
 void publishPath(int robot_id,robotState state, string path,string probs);
+void handler(int signum);
 
 
 int main(int argc, char **argv)
@@ -71,6 +72,13 @@ int main(int argc, char **argv)
 }
 
 
+void handler(int signum) {
+    publishAliveStatus();
+    alarm(1);
+    signal(SIGALRM, handler);
+}
+
+
 void teamStatusCallback(const ses::RobotStatus::ConstPtr& status_msg)
 {
 	int robot_id = status_msg->robot_id;
@@ -95,8 +103,11 @@ void teamStatusCallback(const ses::RobotStatus::ConstPtr& status_msg)
 
 				team[i] = i;
 			}
-
 		 	al = new allocation(team,locations);
+
+		 	alarm(1);
+    		signal(SIGALRM, handler);
+
 			ses::RobotStatus status_msg;
 			status_msg.header.stamp = ros::Time::now();
 			status_msg.header.frame_id = "monitor";
@@ -156,7 +167,6 @@ void stepCallback(const ses::step::ConstPtr& step_msg){
 		vector<pathCell*> path = al->allocateStartArea(robot_id);
 		if(path.size()==1){
 			path = al->areaCoverage(c->getLocation(),robot_id);
-		}
 			string probs = probs2str(path);
 			string newPath = path2str(path);
 			//debug code
@@ -164,7 +174,17 @@ void stepCallback(const ses::step::ConstPtr& step_msg){
 			//debug code
 			publishPath(robot_id,covering,newPath,probs);
 			return;
-		
+
+		}else{
+			string probs = probs2str(path);
+			string newPath = path2str(path);
+			//debug code
+			cout<< "monitor::path for "<<robot_id<< ": "<< newPath << endl;
+			//debug code
+			publishPath(robot_id,traveling,newPath,probs);
+			return;
+		}
+				
 	}
 	//cout << "monitor: is_the_last " << (int)step_msg->is_the_last << endl;
 	if(step_msg->is_the_last){
@@ -250,3 +270,4 @@ string probs2str(vector<pathCell*> path){
 	return newP;
 
 }
+

@@ -49,9 +49,9 @@ private:
     const static double MAX_SCAN_ANGLE = +30.0/180*M_PI;
     const static float MIN_DIST_FROM_OBSTACLE = 0.2;
 
-	const static double placeTol = 0.041;
+	const static double placeTol = 0.008;
 	const static double angularTolerance  = 0.05;
-	const static double DX = 1.6;
+	const static double DX = 2.1;
 	const static double DXHorizontal = 2.265;
 	const static double angularSpeed = 0.25;
 
@@ -67,6 +67,8 @@ private:
 	void getPose();
 	void rotate(Direction d);
 	void step(Direction d);
+	void stepLeftRight(Direction d);
+	void stepUpDown(Direction d);
 	void moveToNext(myTuple* location, myTuple* nextLocation);
 
 };

@@ -1,5 +1,7 @@
-
+# include <unistd.h>
+# include <time.h>
 #include <iostream>
+#include <signal.h>
 #include <ros/ros.h>
 #include <ses/RobotStatus.h>
 #include "moveRobot.h"
@@ -18,6 +20,8 @@ ros::Publisher team_status_pub;
 void publishReadyStatus();
 void teamStatusCallback(const ses::RobotStatus::ConstPtr& status_msg);
 void waitForTeam();
+void handler(int signum);
+void publishAliveStatus();
 
 int main(int argc, char **argv)
 {
@@ -65,12 +69,38 @@ int main(int argc, char **argv)
 
     waitForTeam();
 
+    alarm(1);
+    signal(SIGALRM, handler);
+
+
     moveRobot move(firstStart,secondStart,robot_id,lizi);
     
     move.start();
 
 
     return 0;
+}
+
+
+void handler(int signum) {
+    publishAliveStatus();
+    alarm(1);
+    signal(SIGALRM, handler);
+}
+
+void publishAliveStatus(){
+
+    ses::RobotStatus status_msg;
+
+    status_msg.header.stamp = ros::Time::now();
+    status_msg.robot_id = robot_id;
+    status_msg.is_ready = true;
+
+    // Wait for the publisher to connect to subscribers
+    sleep(1.0);
+    team_status_pub.publish(status_msg);
+
+    //ROS_INFO("Robot %d published Alive status", robot_id);
 }
 
 
