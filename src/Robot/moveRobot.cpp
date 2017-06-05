@@ -45,7 +45,7 @@ void moveRobot::scanCallback(const sensor_msgs::LaserScan::ConstPtr& scan)
 void moveRobot::pathCallback(const ses::Path::ConstPtr& path_msg){
 	
 	if(robot_id == path_msg->robot_id){
-		//cout<<robot_id<<"path: "<<path_msg->path<<endl;
+		cout<<"moveRobot::"<<robot_id<<" path: "<<path_msg->path<<endl;
 		me->setState((robotState)path_msg->state);
 		me->setPath(path_msg->path);
 		me->setProbs(path_msg->probs);
@@ -312,7 +312,7 @@ void moveRobot::stepUpDown(Direction d) {
 		geometry_msgs::Twist stopCommand;
 		stopCommand.linear.x = 0;
 		publisher.publish(stopCommand);
-		cout << i << endl;
+		//cout << i << endl;
 	}
 	//cout << "Angle refinement #4_UPDOWN" << endl;
 }

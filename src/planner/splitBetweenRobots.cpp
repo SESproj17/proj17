@@ -4,11 +4,16 @@
 
 //the vector of the robots is in the according order of the locations order of the robots
 splitBetweenRobots::splitBetweenRobots(subArea* areaToSplit, vector<myTuple> locations){
+	cout<<"splitBetweenRobots:constructor"<<endl;
 	initialArea = areaToSplit;
-	vector<myTuple> robotLocations = locations;
+	initialArea->print();
+	robotLocations = locations;
+	cout<<"splitBetweenRobots:robotLocations size "<<robotLocations.size()<<endl;
 }
 
-splitBetweenRobots::splitBetweenRobots(){}
+splitBetweenRobots::splitBetweenRobots(){
+	
+}
 
 //returns all the subareas of one sub area that was splited
 vector<subArea*> splitBetweenRobots::split(){
@@ -41,13 +46,16 @@ vector<vector<pathCell*> > splitBetweenRobots::vectorToMatrix(vector<pathCell*> 
 }
 
 vector<vector<pathCell*> > splitBetweenRobots::graphPartition(vector<pathCell*>graph,int k){
+
 	int remainder = 0;
 	int cells = graph.size();
+	cout<<"graphPartition:cells "<<cells<<endl;
 	vector<bool> visited(cells, false);
 	vector<pathCell*> last;
 	//how many cells in each vector
 	int amount = cells / k;
 	vector<vector<pathCell*> > solution(k-1, vector<pathCell*>(amount,NULL));
+	//cout<<"graphPartition:solution size "<<solution.size()<<endl;
 	//if the number of cells does not divided in k
 	if(cells % k != 0){
 		remainder = cells % k;
@@ -56,7 +64,8 @@ vector<vector<pathCell*> > splitBetweenRobots::graphPartition(vector<pathCell*>g
 		last.resize(amount, NULL);
 	}
 	solution.push_back(last);
-
+	cout<<"graphPartition:solution[0] size "<<solution[0].size()<<endl;
+	cout<<"graphPartition:solution[1] size "<<solution[1].size()<<endl;
 	//the number of the cell that we are adding him and his neibours to the solution
 	for(int i = 0; i < k;i++){
 		for(int q = 0; q < cells; q++){
@@ -66,12 +75,15 @@ vector<vector<pathCell*> > splitBetweenRobots::graphPartition(vector<pathCell*>g
 					visited[q] = true;
 					j++;
 					vector<pathCell*> neib = graph[q]->getNeighbors();
-					if(neib.size() != 0){
-						for(int r = 0; r < neib.size();r++){
-							int index = findLocation(neib[r], graph);
+					cout<<"graphPartition:neib size "<<neib.size()<<endl;
+					for(int r = 0; r < neib.size();r++){
+						pathCell* c = neib[r];
+						cout<<"graphPartition:c as n "<<c->getProb()<<endl;
+						if(graph[q]->getProb()==c->getProb()){
+							int index = findLocation(c, graph);
 							if(visited[index] == false){
 								visited[index] = true;
-								solution[i][j] = neib[r];
+								solution[i][j] = c;
 								j++;
 							}
 						}
@@ -80,7 +92,10 @@ vector<vector<pathCell*> > splitBetweenRobots::graphPartition(vector<pathCell*>g
 					q++;}//move to the next cell in graph
 			}
 		}
+		cout<<"graphPartition:0th-0th "<<solution[0][0]->getProb()<<endl;
 	}
+	cout<<"graphPartition:here "<<endl;
+
 	//the last vector -- add the remain cells
 	for(int i = 0; i < cells; i++){
 		if(visited[i] == false){
@@ -111,7 +126,9 @@ int splitBetweenRobots::findLocation(pathCell* cell, vector<pathCell*>graph){
 //split the area and generates the costmatrix and find the optimal assignment
 //for the robots
 vector<subArea* > splitBetweenRobots::hungarianMethod(){
+	cout<<"hungarianMethod:entered "<<endl;
 	int k = initialArea->getinitialRobots().size();
+
 	//split
 	vector<vector<float> >costMatrix;
 	costMatrix.resize(k);
@@ -124,12 +141,13 @@ vector<subArea* > splitBetweenRobots::hungarianMethod(){
 	vector<subArea*>newAreas;
 
 	vector<vector<pathCell*> > splitedGraph = graphPartition(initialArea->getCells(),k);
+	cout<<"hungarianMethod:after graphPartition! "<<endl;
 	for (int i = 0; i < k; ++i)
 	{
 		subArea* littleArea = new subArea(vectorToMatrix(splitedGraph[i]),initialArea->getProb(),initialArea->getLevel());
 		newAreas.push_back(littleArea);
 		for (int j = 0; j < k; ++j)
-		{
+		{	//robots are in columns
 			safestPath sp(littleArea->getCells());
 			costedPath* cp = sp.find(robotLocations[j]);
 			costMatrix[i][j] = cp->getCost();
@@ -152,20 +170,32 @@ vector<subArea* > splitBetweenRobots::hungarianMethod(){
 	hung->solve();
 	//return hung->assignment();
 	vector<subArea*> assignment = convert(hung->assignment(), newAreas);
+	cout<<"hungarianMethod:assignment size "<<assignment.size()<<endl;
 	return assignment;
 }
 
 //covert given output from the hungarian method to an assignment
 vector<subArea*> splitBetweenRobots::convert(vector<vector<int> > HungarianOutput, vector<subArea*> areas){
-	cout<<"Hungarian Output:"<<endl;
+	vector<subArea*> assignment(HungarianOutput.size(),NULL);
 	for (int i = 0; i < HungarianOutput.size(); ++i)
 	{
 		for (int j = 0; j < HungarianOutput[0].size(); ++j)
 		{
-			cout<<HungarianOutput[i][j];
+			if(HungarianOutput[i][j] == 1){
+				//according to the assumption that robots in columns and jobs in rows
+				assignment[j] = areas[i];
+			}
 		}
-		cout<<endl;
 	}
-	cout<<"more implementetion is needed!"<<endl;
-	exit(0);
+	cout<<"convert::hungarian is done!"<<endl;
+	return assignment;
 }
+
+
+
+
+
+
+
+
+

@@ -6,7 +6,6 @@ allocation::allocation(vector<int> givenRobots, vector<myTuple> givenStartLocati
 	startLocations = givenStartLocations;
     this->a2r = new areas2Robobts();
     assignment = a2r->statrAllocation(startLocations);
-
     cout<<"allocation: size of assignment: "<<assignment.size()<<endl;
     for (int i = 0; i < team.size(); ++i)
     {

@@ -18,7 +18,7 @@ private:
 
 	vector<vector<pathCell*> > graphPartition(vector<pathCell*>graph,int k);
 	vector<vector<pathCell*> > vectorToMatrix(vector<pathCell*> vec);
-	vector<subArea*> convert(vector<vector<int> > HungarianOutput, vector<subArea*>);
+	vector<subArea*> convert(vector<vector<int> > HungarianOutput, vector<subArea*> areas);
 
 public:
 	splitBetweenRobots();

@@ -4,6 +4,7 @@
 #include <ses/step.h>
 #include <sstream>
 #include <string.h>
+#include <signal.h>
 #include <ses/Path.h>
 #include "grid.h"
 #include "myTuple.h"
@@ -18,11 +19,15 @@ enum robotState {idle,traveling,covering,done,dead};
 
 unsigned int teamSize;
 unsigned int robotsCount = 0;
-bool robotsReady[MAX_ROBOTS_NUM];
+int deadRobots = 0;
+//bool robotsReady[MAX_ROBOTS_NUM];
 vector<myTuple> locs(MAX_ROBOTS_NUM,myTuple(-1,-1));
 vector<int> ids;
+vector<bool> lives;
 allocation* al;
 int sekelton = -1;
+bool started = false;
+bool end = false;
 
 
 ros::Subscriber team_status_sub;
@@ -30,6 +35,8 @@ ros::Publisher team_status_pub;
 
 ros::Subscriber steps_sub;
 ros::Publisher path_pub;
+
+
 
 void bury(int robot_id);
 string path2str(vector<pathCell*> path);
@@ -51,6 +58,14 @@ int main(int argc, char **argv)
 	char *teamSizeStr = argv[1];
 	teamSize = atoi(teamSizeStr);
 
+	lives.resize(teamSize);
+	//if ness
+	for (int i = 0; i < teamSize; ++i)
+	{
+		lives[i] = false;
+	}
+	//team.resize(teamSize);
+
 	// Check that robot id is between 0 and MAX_ROBOTS_NUM
 	if (teamSize > MAX_ROBOTS_NUM || teamSize < 1 ) {
 	    ROS_ERROR("The team size must be an integer number between 1 and %d", MAX_ROBOTS_NUM);
@@ -68,52 +83,106 @@ int main(int argc, char **argv)
 
 	ROS_INFO("Waiting for robots to connect...");
 
-	ros::spin();
+	while(!end){
+		 ros::spinOnce();
+	}
+	cout<<"finished"<<endl;
+	//ros::spin();
 }
 
 
 void handler(int signum) {
-    publishAliveStatus();
-    alarm(1);
-    signal(SIGALRM, handler);
+	cout<<"monitor::alarm"<<endl;
+	cout<<"monitor:: live robots"<<robotsCount<<endl;
+    for (int i = 0; i < lives.size(); ++i)
+    {
+    	if(!lives[i]){
+    		robotsCount--;
+    	}
+    	lives[i] = false;
+    }
+    if(robotsCount == 0){
+    	cout<<"monitor::whole team is dead :("<<endl;
+    	end = true;
+    }else{
+    	alarm(12);
+    	signal(SIGALRM, handler);
+    }
 }
+
 
 
 void teamStatusCallback(const ses::RobotStatus::ConstPtr& status_msg)
 {
+	
 	int robot_id = status_msg->robot_id;
-	int x = status_msg->start_x;
-	int y = status_msg->start_y;
-	if (!robotsReady[robot_id]) {
-		ROS_INFO("Robot %d is ready!\n", robot_id);
-		robotsReady[robot_id] = true;
-		myTuple m(x,y);
-		locs[robot_id] = m;
-		robotsCount++;
-		
-		
-		if (robotsCount == teamSize) {
+	if (!lives[robot_id]) {
+		lives[robot_id] = true;
+		if(!started){
+			ROS_INFO("Robot %d is ready!\n", robot_id);
+			int x = status_msg->start_x;
+			int y = status_msg->start_y;
+			myTuple m(x,y);
+			locs[robot_id] = m;
+			robotsCount++;
+			if (robotsCount == teamSize) {
+				ROS_INFO("All robots GO!");
+				
+				vector<myTuple> locations(teamSize,myTuple(-1,-1));
+				vector<int> team(teamSize,-1);
+				for (int i = 0; i < teamSize; ++i)
+				{
+					locations[i] = locs[i];
+					team[i] = i;
+				}
+			 	al = new allocation(team,locations);
+			 	cout<<"monitor::still Alive.."<<endl;
+			 	started = true;
+			 	alarm(12);
+	    		signal(SIGALRM, handler);
 
-			ROS_INFO("All robots GO!");
-			vector<myTuple> locations(teamSize,myTuple(-1,-1));
-			vector<int> team(teamSize,-1);
-			for (int i = 0; i < teamSize; ++i)
-			{
-				locations[i] = locs[i];
-
-				team[i] = i;
+				ses::RobotStatus status_msg;
+				status_msg.header.stamp = ros::Time::now();
+				status_msg.header.frame_id = "monitor";
+				team_status_pub.publish(status_msg);
 			}
-		 	al = new allocation(team,locations);
-
-		 	alarm(1);
-    		signal(SIGALRM, handler);
-
-			ses::RobotStatus status_msg;
-			status_msg.header.stamp = ros::Time::now();
-			status_msg.header.frame_id = "monitor";
-			team_status_pub.publish(status_msg);
 		}
 	}
+/*	lives[robot_id] = true;
+	if(!started){
+		int x = status_msg->start_x;
+		int y = status_msg->start_y;
+		if (!lives[robot_id]) {
+			ROS_INFO("Robot %d is ready!\n", robot_id);
+			lives[robot_id] = true;
+			myTuple m(x,y);
+			locs[robot_id] = m;
+			robotsCount++;
+				
+			if (robotsCount == teamSize) {
+
+				ROS_INFO("All robots GO!");
+				vector<myTuple> locations(teamSize,myTuple(-1,-1));
+				vector<int> team(teamSize,-1);
+				for (int i = 0; i < teamSize; ++i)
+				{
+					locations[i] = locs[i];
+					team[i] = i;
+				}
+			 	al = new allocation(team,locations);
+
+			 	alarm(1);
+	    		signal(SIGALRM, handler);
+
+				ses::RobotStatus status_msg;
+				status_msg.header.stamp = ros::Time::now();
+				status_msg.header.frame_id = "monitor";
+				team_status_pub.publish(status_msg);
+			}
+		}
+	}else{
+
+	}*/
 }
 
 

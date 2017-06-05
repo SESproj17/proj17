@@ -69,7 +69,7 @@ int main(int argc, char **argv)
 
     waitForTeam();
 
-    alarm(1);
+    alarm(5);
     signal(SIGALRM, handler);
 
 
@@ -84,7 +84,7 @@ int main(int argc, char **argv)
 
 void handler(int signum) {
     publishAliveStatus();
-    alarm(1);
+    alarm(5);
     signal(SIGALRM, handler);
 }
 
