@@ -11,6 +11,7 @@ using namespace std;
 
 enum robotState {idle,traveling,covering,done,dead};
 
+// The class holds information about the robot
 class robot 
 {
 public:

@@ -14,7 +14,7 @@
 #include "safestPath.h"
 using namespace std;
 
-
+//The class maintains the areas lists and provides an assignment for robots as input
 class areas2Robobts{
 private:
 

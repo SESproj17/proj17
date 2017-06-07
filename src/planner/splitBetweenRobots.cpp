@@ -120,6 +120,7 @@ int splitBetweenRobots::findLocation(pathCell* cell, vector<pathCell*>graph){
 			return i;
 		}
 	}
+	return -1;
 }
 
 

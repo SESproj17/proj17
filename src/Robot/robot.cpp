@@ -5,13 +5,7 @@
 #include <string>
 
 using namespace std;
-void robot::setLocation(myTuple* newTuple) {
-	this->location = newTuple;
-}
 
-vector<myTuple*> robot::getPath(){
-	return this->path;
-}
 robot::robot(int first, int second){
 
 	location = new myTuple(first,second);
@@ -19,6 +13,15 @@ robot::robot(int first, int second){
 
 }
 
+void robot::setLocation(myTuple* newTuple) {
+	this->location = newTuple;
+}
+
+vector<myTuple*> robot::getPath(){
+	return this->path;
+}
+
+//Conversion of input built as a string into a vector<myTuple>
 void robot::setPath(string path){
 
 	vector<string> spath = split(path, ' ');
@@ -30,6 +33,7 @@ void robot::setPath(string path){
 	}
 }
 
+//Conversion of input built as a string into a vector<float>
 void robot::setProbs(string probs){
 
 	vector<string> strProbs = split(probs, ' ');
@@ -50,6 +54,8 @@ robotState robot::getState(){
 myTuple* robot::getLocation(){
 	return this->location;
 }
+
+//Asks whether the robot is in the last position in the path given to it
 bool robot::isTheLast(){
 	return this->path.size() == 1;
 }
@@ -71,17 +77,20 @@ vector<string> robot::split(const string &s, char delim) {
     return tokens;
 }
 
+//Simulates one step of the robot by cutting the path head, and updating the location to be the new path head
 void robot::move(){
 	this->probs.erase(this->probs.begin());
 	this->path.erase(this->path.begin());
 	this->location = path[0];
 }
+
 //flip coin and check if the robot that move on this cell died or not.
 bool robot::imAlive() {
 	srand(time(NULL));
 	int x;float y;
 	x = rand()%11;
 	y = float(x)/10;
+	//y = y*4;
 	if (y > probs[0]) {return true;}
 	this->state = dead;
 	return false;

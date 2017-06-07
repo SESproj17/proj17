@@ -6,49 +6,49 @@ allocation::allocation(vector<int> givenRobots, vector<myTuple> givenStartLocati
 	startLocations = givenStartLocations;
     this->a2r = new areas2Robobts();
     assignment = a2r->statrAllocation(startLocations);
-    cout<<"allocation: size of assignment: "<<assignment.size()<<endl;
     for (int i = 0; i < team.size(); ++i)
     {
     	assignment[i]->changeState(Assigned);
-    	assignment[i]->print();
-    	cout<<endl;
     }
 }
 
-
+//Updating the area the robot is responsible for being the given area
 void allocation::assign(subArea* area, int robot){
-	if(team[robot] == skeleton){cout<<"assign: problem assign to dead robot->EXIT"<<endl; exit(0);}
-	if(area->getState() != NotAssigned){cout<<"assign: problem area is Assigned or completed->EXIT"<<endl; exit(0);}
-	//if(NULL != assignment[robot]){cout<<"assign: problem assign to busy robot->EXIT"<<endl; exit(0);}
+	if(team[robot] == skeleton){cout<<"assign: problem assign to dead robot->EXIT"<<endl; exit(1);}
+	if(area->getState() != NotAssigned){cout<<"assign: problem area is Assigned or completed->EXIT"<<endl; exit(1);}
+	//if(NULL != assignment[robot]){cout<<"assign: problem assign to busy robot->EXIT"<<endl; exit(1);}
 	assignment[robot] = area;
+	assignment[robot]->print();
 	area->changeState(Assigned);
 }
 
+//Taking care of a case where a robot died. Makes sure that the area to which it was allocated is marked as unAssigned
 void allocation::unAssign(int robot){
-	if(team[robot] == skeleton){cout<<"unAssign: problem un-assign to dead robot->EXIT"<<endl; exit(0);}
+	if(team[robot] == skeleton){cout<<"unAssign: robot "<<robot<<" died yesterday!"<<endl;return;}
 	subArea* area = assignment[robot];
-	if(area-> getState() != Assigned){cout<<"unAssign: problem area is not Assigned or completed->EXIT"<<endl; exit(0);}
-	if(NULL == area){cout<<"unAssign: problem robot is free"<<endl; exit(0);}
-	area->changeState(NotAssigned);
+	if(area-> getState() != Assigned){cout<<"unAssign: problem area is not Assigned or completed->EXIT"<<endl; exit(1);}
+	if(NULL == area){cout<<"unAssign: problem robot is free"<<endl; exit(1);}
+	team[robot] = skeleton;
+	area->changeState(Covered);//??????
 	assignment[robot] = NULL;
-	vector<subArea*> newAreas = area->dfs();
+	area->print();
+	cout<<"unAssign:before getInheritance"<<endl;
+	vector<subArea*> newAreas = area->getInheritance();
+	cout<<"unAssign:after getInheritance"<<endl;
 	a2r->addSplited(area, newAreas);
 
 }
 
-void allocation::bury(int robot_id){
-	unAssign(robot_id);
-	team[robot_id] = skeleton;
-}
-
+//Calculates the closest and safest areas for all robots at the start of the algorithm
 vector<pathCell*> allocation::allocateStartArea(int robot_id){
-	if(team[robot_id] == skeleton){cout<<"allocateStartArea::allocation to dead robot->EXIT"<<endl;exit(0);}
+	if(team[robot_id] == skeleton){cout<<"allocateStartArea::allocation to dead robot->EXIT"<<endl;exit(1);}
 	subArea* area = assignment[robot_id];
 	return a2r->getSafestPath(startLocations[robot_id], area);
 }
 
+//Returns the closest safest area to given robot
 vector<pathCell*> allocation::allocateNextArea(myTuple location,int robot_id){
-	if(team[robot_id] == skeleton){cout<<"allocateNextArea::allocation to dead robot->EXIT"<<endl;exit(0);}
+	if(team[robot_id] == skeleton){cout<<"allocateNextArea::allocation to dead robot->EXIT"<<endl;exit(1);}
 	subArea* area = a2r->lookForNewArea(location);
 	assign(area, robot_id);
 	if(NULL == area){
@@ -59,11 +59,7 @@ vector<pathCell*> allocation::allocateNextArea(myTuple location,int robot_id){
 }
 
 
-/*
-greedy approach, where in each step it leads the robot
-to the safest nearest cell to its current location which has not been
-covered yet.
-*/
+//Returns a cover path to the robot's area, from its location
 vector<pathCell*> allocation::areaCoverage(myTuple location, int robot_id){
 	subArea* area = assignment[robot_id];
 	return area->coverge(location);

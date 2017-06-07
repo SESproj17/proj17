@@ -4,6 +4,7 @@ using namespace std;
 
 areas2Robobts::areas2Robobts(){
 	ros::NodeHandle nh;
+	//create the areas
 	double jump,max;
 	nh.getParam("jump_cost",jump);
 	nh.getParam("max_cost",max);
@@ -12,47 +13,37 @@ areas2Robobts::areas2Robobts(){
     areas = al->getConnectedAreas(vc);
 }
 
-vector<pathCell*> areas2Robobts::getSafestPath(myTuple robiLocation, subArea* area){
-	costedPath* cp = findSafestPath(robiLocation,area);
-	return cp->getPath();
-}
-
 subArea* areas2Robobts::lookForNewArea(myTuple location){
 	vector<subArea*> a = sortedAvailableAreasPerLocation(location, NotAssigned);
-	cout<<"nuber of safest unassiged areas: "<<a.size()<<endl;
+	cout<<"lookForNewArea:nuber of safest unassiged areas: "<<a.size()<<endl;
 	if(a.size()>0){
 		return a[0];
 	}
+	cout<<"lookForNewArea:no more areas to cover"<<endl;
 	return NULL;	
 }
 
 vector<subArea*> areas2Robobts::statrAllocation(vector<myTuple> teamStartLocations)
 {	
-
-	//assign robots in areas
+	//connect robots to areas
 	vector<subArea*> sortedAreas;
-	cout<<"statrAllocation::size of teamStartLocations: "<<teamStartLocations.size()<<endl;
 	for(int i = 0;i < teamStartLocations.size();i++){	
-		sortedAreas = sortedAvailableAreasPerLocation(teamStartLocations[i], NotAssigned);
-		cout<<"statrAllocation::size of sorted: "<<sortedAreas.size()<<endl;			
-		for(int j = 0;j < sortedAreas.size();j++){//check if area is not too dense with robots
+		sortedAreas = sortedAvailableAreasPerLocation(teamStartLocations[i], NotAssigned);	
+		for(int j = 0;j < sortedAreas.size();j++){
 			subArea* a = sortedAreas[j];
-			if(a->getinitialRobots().size()*D <= a->getCells().size()){// after 
+			if(a->getinitialRobots().size()*D <= a->getCells().size()){//check if area is not too dense with robots
 				a->addRobot(i);
 				break;
 			}
-			//cout<<"statrAllocation::need to not beeing here "<<endl;
 		}
 	}
 
+	//create the final assignment
 	vector<subArea*> assignment;
 	assignment.resize(teamStartLocations.size());
-
 	
-	//we can stop this loop when no robots left
 	for(int i = 0;i <sortedAreas.size();i++){
 		subArea* a = sortedAreas[i];
-		//a->print();
 		vector<int> idsRobotsOfA= a->getinitialRobots();
 		if(idsRobotsOfA.size()>1){
 			vector<myTuple> locations(idsRobotsOfA.size(),myTuple(-1,-1));
@@ -91,7 +82,6 @@ vector<subArea*> areas2Robobts::sortedAvailableAreasPerLocation(myTuple location
 	vector<subArea*> safests = getSafeAreas();
 	for(int j = 0;j < safests.size();j++){
 		subArea* area = safests[j];
-		// /area->print();
 		if(area->getState() == askedState){
 			costedAreas.push_back(new costedArea(area, findSafestPath(location,area)));
 		}
@@ -105,11 +95,6 @@ vector<subArea*> areas2Robobts::sortedAvailableAreasPerLocation(myTuple location
 	return sortedAreas;
 }
 
-vector<subArea*> areas2Robobts::getSafeAreas(){
-	int i = 0;
-	while(areas[i].size() == 0){i++;}
-	return areas[i];
-}
 
 /*
 input: area(oldArea) that splited, new sub areas
@@ -122,6 +107,21 @@ void areas2Robobts::addSplited(subArea* oldArea, vector<subArea*> newSplitedArea
 		add(newSplitedAreas[i]);
 	}
 }
+//add new robot to the area's list at it's level
+void areas2Robobts::add(subArea* added){
+ 	int level = added->getLevel();
+ 	areas[level].push_back(added);
+ }
+
+
+/***********************************************************************************/
+ 
+//TODO: fix it
+vector<subArea*> areas2Robobts::getSafeAreas(){
+	int i = 0;
+	while(areas[i].size() == 0){i++;}
+	return areas[i];
+}
 
  costedPath* areas2Robobts::findSafestPath(myTuple robiLocation, subArea* area){
  	vector<pathCell*> cells = area->getCells();
@@ -129,7 +129,10 @@ void areas2Robobts::addSplited(subArea* oldArea, vector<subArea*> newSplitedArea
  	return sp.find(robiLocation);    
  }
 
- void areas2Robobts::add(subArea* added){
- 	int level = added->getLevel();
- 	areas[level].push_back(added);
- }
+
+vector<pathCell*> areas2Robobts::getSafestPath(myTuple robiLocation, subArea* area){
+	costedPath* cp = findSafestPath(robiLocation,area);
+	return cp->getPath();
+}
+
+/**************************************************************************************/ 

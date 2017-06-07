@@ -19,70 +19,108 @@ subArea::subArea(vector<vector <pathCell*> > givenCells,float givenProb,int lvl)
     this->notFoundYet = this->cells.size();
 }
 
+subArea::subArea(int rows,int cols,vector<pathCell*> givenCells,float givenProb,int lvl){
+    this->prob = givenProb;
+    this->myLevel = lvl;
+    this->state = NotAssigned;
+    this->cells = givenCells;
+    this->myCells.resize(rows);
+    for (int i = 0; i < rows; ++i)
+    {
+        myCells[i].resize(cols);
+    }
+    for (int i = 0; i < givenCells.size(); ++i)
+    {
+        pathCell* c = givenCells[i];
+        myCells[c->getLocation().returnFirst()][c->getLocation().returnSecond()] = c;
+    }
+}
 
-//output : all the subareas of this area
-vector<subArea*> subArea::dfs(){
-    grid* g = grid::getInstance();
-    int rows = g->getRows();
-    int cols = g->getCols();
-    int i,j;
+//output : all uncovered subareas of this area
+vector<subArea*> subArea::getInheritance(){
+    splitBetweenRobots* sbr = new splitBetweenRobots();
     vector<subArea*> connectedList;
-    vector<bool> visited(rows*cols, false);
-    for(i = 0;i <rows;i++){
-        for(j = 0;j<cols;j++){
-            pathCell* s = g->getCellAt(i,j);
-            if(s != NULL && s->getState() == NotVisited && !visited[i*rows + j]){
-                stack<pathCell*> stack;
-                vector<vector<pathCell*> > subA(rows,vector<pathCell*>(cols, NULL));
-                stack.push(s);
-                while (!stack.empty())
-                { 
-                    cout<<i<<" "<<j<<endl;
-                    s = stack.top();
-                    stack.pop();
-                    int x = s->getLocation().returnFirst(),y = s->getLocation().returnSecond();
-                    if (!visited[x*rows + y]){
-                        subA[x][y] = g->getCellAt(x,y);
-                        visited[x*rows + y] = true;
-                    }
-                    //go over the neighbours if some of them are 
-                    //not visited push them into the stack
-                    vector<pathCell*>neib = s->getNeighbors();
-                    //cout<<"sizeOfneibs: "<<neib.size()<<endl;
-                    for (int i =0; i< neib.size();i++){
-                        int first,second;
-                        myTuple mt = neib[i]->getLocation();
-                        first = mt.returnFirst();
-                        second = mt.returnSecond();
-                        if(!visited[first*rows + second] && neib[i]->getState() == NotVisited){
-                            stack.push(neib[i]);
-                        }
-                    }
-                    //cout<<"sizeOstack: "<<stack.size()<<endl;
-                    //exit(0);
-                }
-                //create an area and add it to the vector
-                subArea* connectedArea = new subArea(subA,prob,myLevel);
-                connectedArea->changeState(NotAssigned);
+    vector<pathCell*> graph = getCells();
+    vector<bool> inherLocalVisited(graph.size(), false);
 
+    for (int i = 0; i < graph.size(); ++i)
+    {
+        if (graph[i]->getState()==NotVisited && !inherLocalVisited[i])
+            {
+                vector<pathCell*> fromDfs = dfs(graph[i]);
+                for (int j = 0; j < fromDfs.size(); ++j)
+                {
+                    int index = sbr->findLocation(fromDfs[j], graph);
+                    inherLocalVisited[index] = true;
+                }
+
+                subArea* connectedArea = new subArea(myCells.size(),myCells[0].size(),fromDfs,prob,myLevel);
+                connectedArea->changeState(NotAssigned);
                 vector<pathCell*> cells = connectedArea->getCells();
                 for (int k = 0; k < cells.size(); ++k)
                 {
-                    int xRows = cells[k]->getLocation().returnFirst();
-                    int yCols = cells[k]->getLocation().returnSecond();
-                    pathCell* myCell = g->getCellAt(xRows,yCols);
-                
-                    myCell->setArea(connectedArea);
+                    cells[k]->setArea(connectedArea);
                 }
                 connectedList.push_back(connectedArea);
-            }
-        }
+                //debug code
+                connectedArea->print();
+                cout<<endl;
+                //debug code
+            }    
     }
+    cout<<"dfs: num of areas at the inheritance: "<<connectedList.size()<<endl;
     return connectedList;
 }
 
+vector<pathCell*> subArea::dfs(pathCell* start){
+    vector<bool> dfsLocalVisited(cells.size(), false);
+    cout<<"dfs:cells.size() "<<cells.size()<<endl;
+    cout<<"dfs:dfsLocalVisited.size() "<<dfsLocalVisited.size()<<endl;
+    splitBetweenRobots* sbr = new splitBetweenRobots();
+    vector<pathCell*> connectedSubGraph;
+    stack<pathCell*> stack;
+   
+    pathCell* s = start;
+    stack.push(s);
+    while (!stack.empty()){
+        s = stack.top();
+        stack.pop();
+        int index = sbr->findLocation(s, cells);
+        if(!(index<cells.size() && index>=0)){
+            cout<<"??"<<index<<endl;
+        }
+        if(s->getState() == NotVisited && !dfsLocalVisited[index]){
+            if(2 == s->getLocation().returnFirst()&& 6 == s->getLocation().returnSecond()){
+                cout<<"1    wrong"<<endl;
+                int j = sbr->findLocation(s, cells);
+                cout<<j<<endl;
+                cout<<cells[j]->getLocation().returnFirst()<<"**"<<cout<<cells[j]->getLocation().returnSecond()<<endl;
+            }
+            if(5 == s->getLocation().returnFirst()&& 1 == s->getLocation().returnSecond()){
+                cout<<"0   wrong"<<endl;
+                int j = sbr->findLocation(s, cells);
+                cout<<j<<endl;
+                cout<<cells[j]->getLocation().returnFirst()<<"**"<<cout<<cells[j]->getLocation().returnSecond()<<endl;
 
+            }
+            cout<<index<<endl;
+            connectedSubGraph.push_back(s);
+            cout<<"dfs:connectedSubGraph.size() "<<connectedSubGraph.size()<<endl;
 
+            dfsLocalVisited[index] = true;
+            vector<pathCell*>neib = s->getNeighbors();
+            for (int i =0; i< neib.size();i++){
+                index = sbr->findLocation(neib[i], cells);
+                if (index>-1)
+                {
+                    stack.push(neib[i]);
+                }
+            }
+        }
+    }
+    return connectedSubGraph;
+}
+    
 
 void subArea::print() {
     for (int i = 0; i < myCells.size(); ++i)
@@ -92,7 +130,14 @@ void subArea::print() {
             if(myCells[i][j] == NULL){
                 cout << "O ";
             }else {
-                cout << "1 ";
+                if(myCells[i][j]->getState() == NotVisited){
+                    cout << "1 ";
+                }else if(myCells[i][j]->getState() == Visited){
+                    cout << "2 ";
+                }else{
+                    cout << "? ";
+                }
+                
             }
         }
         cout << endl;
@@ -101,6 +146,12 @@ void subArea::print() {
 
 int subArea::getLeftCells() { return this->notFoundYet; }
 
+
+/*
+greedy approach, where in each step it leads the robot
+to the safest nearest cell to its current location which has not been
+covered yet.
+*/
 vector<pathCell*> subArea::coverge(myTuple start){
     print();
     grid* g = grid::getInstance();
@@ -115,18 +166,14 @@ vector<pathCell*> subArea::coverge(myTuple start){
     }
     bool first = true;
     while(notAppearsAtPath.size()){
-        //cout<<" b size of notAppearsAtPath: "<<notAppearsAtPath.size()<<endl;
         safestPath sp(notAppearsAtPath);
         vector<pathCell*> temp = sp.find(start)->getPath();
         if(first){path.insert(path.end(), temp.begin(), temp.end());}
         else{path.insert(path.end(), temp.begin()+1, temp.end());}   
-        //cout<<"size of path: "<<path.size()<<endl;
-        //cout<<"size of temp: "<<temp.size()<<endl;
         temp[temp.size()-1]->setAppear(true);
         splitBetweenRobots* sbr = new splitBetweenRobots();
         int index = sbr->findLocation(temp[temp.size()-1], notAppearsAtPath);
         notAppearsAtPath.erase(notAppearsAtPath.begin() + index);
-        //cout<<" b size of notAppearsAtPath: "<<notAppearsAtPath.size()<<endl; 
         start = temp[temp.size()-1]->getLocation();  
         temp.clear();
         first = false;

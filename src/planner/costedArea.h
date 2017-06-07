@@ -3,10 +3,11 @@
 
 
 #include <ros/ros.h>
-//#include <iostream>
 #include "subArea.h"
 #include "costedPath.h"
 
+
+//A connction between area to path and price to it 
 class costedArea{
 	private:
 		subArea* myArea;

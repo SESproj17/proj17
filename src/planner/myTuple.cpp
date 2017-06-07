@@ -6,6 +6,11 @@ myTuple::myTuple(int givenX,int givenY) {
 	this->y = givenY;
 }
 
+myTuple::myTuple() {
+	this->x = -1;
+	this->y = -1;
+}
+
 //return the first elemnt.
 int myTuple::returnFirst() { return this->x;}
 //return the second element.

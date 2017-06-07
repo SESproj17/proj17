@@ -10,6 +10,7 @@ private:
 	int y;
 public:
 	myTuple(int givenX,int givenY);
+	myTuple(); 
 	int returnFirst();
 	bool equals(myTuple* other);
 	int returnSecond();

@@ -5,6 +5,7 @@ safestPath::safestPath(vector<pathCell*> givencells){
 	cells = givencells;
 }
 
+//find a safeast path
 costedPath* safestPath::find(myTuple robiLocation){
 	grid* g = grid::getInstance();
  	vector<costedPath*>costedPaths;
@@ -20,6 +21,7 @@ costedPath* safestPath::find(myTuple robiLocation){
 	return this->min(costedPaths);
 }
 
+//Returns the path with the lowest price
 costedPath* safestPath::min(vector<costedPath*>paths){
  	costedPath* cp = paths[0];
  	float minimum = cp->getCost();
@@ -34,6 +36,7 @@ costedPath* safestPath::min(vector<costedPath*>paths){
 
  }
 
+//compute price of path
  float safestPath::price(vector<pathCell*> path){
  	float price = 0.0;
  	for (int k = 0; k < path.size(); ++k)

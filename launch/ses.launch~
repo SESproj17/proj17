@@ -30,8 +30,8 @@
 
         <include file="$(find ric_gazebo)/launch/lizi_gazebo.launch"/>
 
-	<node name="Robot_1" pkg="ses" type="robot" args="2 1 0 9" output="screen"/>
-	<node name="Robot_0" pkg="ses" type="robot" args="1 0 0 7" output="screen"/> 
+	<node name="Robot_1" pkg="ses" type="robot" args="2 0 9" output="screen"/>
+	<node name="Robot_0" pkg="ses" type="robot" args="1 0 0" output="screen"/> 
 
   	<node name="monitor" pkg="ses" type="monitor" args="2" output="screen"/> 
 	

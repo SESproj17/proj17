@@ -1,6 +1,8 @@
 # include <unistd.h>
 # include <time.h>
 #include <iostream>
+#include <sstream>
+#include <string>
 #include <signal.h>
 #include <ros/ros.h>
 #include <ses/RobotStatus.h>
@@ -26,26 +28,25 @@ void publishAliveStatus();
 int main(int argc, char **argv)
 {
 
-    if (argc < 2) {
-        ROS_ERROR("You must specify robot id.");
-        return -1;
-    }
     char *lizinumber = argv[1];
     string lizi( lizinumber );
     cout << "RobotMain::main liziNumber = " << lizi << endl;
     
-    char *id = argv[2];
-    robot_id = atoi(id);
+    int id;
+    stringstream convert(lizi);
+    convert>>id;
+    robot_id = id-1;
 
-
+    ostringstream ss;
+    ss << robot_id;
     string node_name = "Robot_";
-    node_name += id;
+    node_name += robot_id;
 
 
-    char *x = argv[3];
+    char *x = argv[2];
     firstStart = atoi(x);
 
-    char *y = argv[4];
+    char *y = argv[3];
     secondStart = atoi(y);
 
 

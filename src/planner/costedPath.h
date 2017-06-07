@@ -6,6 +6,7 @@
 #include <vector>
 #include "grid.h"
 
+//A connection between path and its price
 class costedPath {
 private:
 	vector<pathCell*> myCells;

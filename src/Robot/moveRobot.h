@@ -20,7 +20,7 @@
 using namespace std;
 enum Direction {RIGHT,UP,LEFT,DOWN};
 
-
+//The class is responsible for moving the robot
 class moveRobot 
 {
 public:
@@ -43,7 +43,12 @@ private:
 	robot* me;
 	bool canMove;
 	int robot_id;
-	
+
+	double currentLocationX;
+	double currentLocationY;
+	double currentAngle;
+
+	int newCounter;	
 
 	const static double MIN_SCAN_ANGLE = -30.0/180*M_PI;
     const static double MAX_SCAN_ANGLE = +30.0/180*M_PI;
@@ -52,14 +57,9 @@ private:
 	const static double placeTol = 0.008;
 	const static double angularTolerance  = 0.05;
 	const static double DX = 2.1;
-	const static double DXHorizontal = 2.265;
+	const static double DXHorizontal = 2.5175;
 	const static double angularSpeed = 0.25;
 
-	double currentLocationX;
-	double currentLocationY;
-	double currentAngle;
-
-	int newCounter;
 
 	void pathCallback(const ses::Path::ConstPtr& path_msg);
 	void scanCallback(const sensor_msgs::LaserScan::ConstPtr& scan);

@@ -31,7 +31,8 @@ public:
 	int getLeftCells();
 	void print();
 	subArea(vector<vector <pathCell*> > givenCells,float givenProb,int lvl);
-	subArea(vector<pathCell* > newCells,float givenProb,int lvl);
+	subArea(int rows,int cols,vector<pathCell*> givenCells,float givenProb,int lvl);
+
 	vector<pathCell*> getCells();
 	vector<pathCell*> coverge(myTuple start);
 	vector<int> getinitialRobots();
@@ -40,7 +41,8 @@ public:
 	pathCell* getCellAt(int i,int j);
 	float getProb();
 	int getLevel();
-	vector<subArea*> dfs();
+	vector<subArea*> getInheritance();
+	vector<pathCell*> dfs(pathCell* start);
 
 	void changeState(AreaState newState);
 	AreaState getState();
