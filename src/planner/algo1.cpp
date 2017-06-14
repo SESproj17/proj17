@@ -107,7 +107,6 @@ vector<subArea*> algo1::dfs(area* graph,int rows,int cols){
 				stack.push(s);
 				while (!stack.empty())
 				{ 
-					cout<<i<<" "<<j<<endl;
 					s = stack.top();
 					stack.pop();
 					int x = s->getLocation().returnFirst(),y = s->getLocation().returnSecond();

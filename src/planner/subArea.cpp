@@ -32,7 +32,15 @@ subArea::subArea(int rows,int cols,vector<pathCell*> givenCells,float givenProb,
     for (int i = 0; i < givenCells.size(); ++i)
     {
         pathCell* c = givenCells[i];
+        c->setArea(this);
         myCells[c->getLocation().returnFirst()][c->getLocation().returnSecond()] = c;
+    }
+    this->notFoundYet = 0;
+    for (int i = 0; i < givenCells.size(); ++i)
+    {
+        if(givenCells[i]->getState() == NotVisited){
+            this->notFoundYet++;
+        }
     }
 }
 
@@ -57,11 +65,14 @@ vector<subArea*> subArea::getInheritance(){
                 subArea* connectedArea = new subArea(myCells.size(),myCells[0].size(),fromDfs,prob,myLevel);
                 connectedArea->changeState(NotAssigned);
                 vector<pathCell*> cells = connectedArea->getCells();
+                connectedList.push_back(connectedArea);
+                //unnessesry hopfully....
                 for (int k = 0; k < cells.size(); ++k)
                 {
                     cells[k]->setArea(connectedArea);
                 }
-                connectedList.push_back(connectedArea);
+                //
+
                 //debug code
                 connectedArea->print();
                 cout<<endl;
@@ -86,23 +97,7 @@ vector<pathCell*> subArea::dfs(pathCell* start){
         s = stack.top();
         stack.pop();
         int index = sbr->findLocation(s, cells);
-        if(!(index<cells.size() && index>=0)){
-            cout<<"??"<<index<<endl;
-        }
         if(s->getState() == NotVisited && !dfsLocalVisited[index]){
-            if(2 == s->getLocation().returnFirst()&& 6 == s->getLocation().returnSecond()){
-                cout<<"1    wrong"<<endl;
-                int j = sbr->findLocation(s, cells);
-                cout<<j<<endl;
-                cout<<cells[j]->getLocation().returnFirst()<<"**"<<cout<<cells[j]->getLocation().returnSecond()<<endl;
-            }
-            if(5 == s->getLocation().returnFirst()&& 1 == s->getLocation().returnSecond()){
-                cout<<"0   wrong"<<endl;
-                int j = sbr->findLocation(s, cells);
-                cout<<j<<endl;
-                cout<<cells[j]->getLocation().returnFirst()<<"**"<<cout<<cells[j]->getLocation().returnSecond()<<endl;
-
-            }
             cout<<index<<endl;
             connectedSubGraph.push_back(s);
             cout<<"dfs:connectedSubGraph.size() "<<connectedSubGraph.size()<<endl;
@@ -144,7 +139,9 @@ void subArea::print() {
     }    
 }
 
-int subArea::getLeftCells() { return this->notFoundYet; }
+int subArea::getLeftCells() { 
+    return this->notFoundYet; 
+}
 
 
 /*
@@ -153,7 +150,7 @@ to the safest nearest cell to its current location which has not been
 covered yet.
 */
 vector<pathCell*> subArea::coverge(myTuple start){
-    print();
+    //print();
     grid* g = grid::getInstance();
     vector<pathCell*> path;
     vector<pathCell*> notAppearsAtPath;
@@ -203,7 +200,7 @@ AreaState subArea::getState() {
 }
 
 void subArea::notifyVisitedCell(){
-    this->notFoundYet--;
+    if (this->notFoundYet > 0)this->notFoundYet--;
     if (this->notFoundYet == 0){this->state = Covered;}
 }
 

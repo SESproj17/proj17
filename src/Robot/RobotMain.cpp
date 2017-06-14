@@ -109,8 +109,15 @@ void teamStatusCallback(const ses::RobotStatus::ConstPtr& status_msg)
 {
     // Check if message came from monitor
     if (status_msg->header.frame_id == "monitor") {
-        ROS_INFO("Robot %d: Team is ready. Let's move!", robot_id);
-        teamReady = true;
+        if(status_msg->is_ready == true){
+            ROS_INFO("Robot %d: Team is ready. Let's move!", robot_id);
+            teamReady = true;
+        }
+        if (status_msg->is_ready == false)
+        {
+            ROS_INFO("Robot %d: Goodye!", robot_id);
+            exit(0);
+        }
     }
 }
 

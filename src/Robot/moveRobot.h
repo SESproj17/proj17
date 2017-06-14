@@ -42,6 +42,7 @@ private:
 
 	robot* me;
 	bool canMove;
+	bool canMoveObst;
 	int robot_id;
 
 	double currentLocationX;
@@ -52,10 +53,10 @@ private:
 
 	const static double MIN_SCAN_ANGLE = -30.0/180*M_PI;
     const static double MAX_SCAN_ANGLE = +30.0/180*M_PI;
-    const static float MIN_DIST_FROM_OBSTACLE = 0.2;
+    const static float MIN_DIST_FROM_OBSTACLE = 0.5;
 
 	const static double placeTol = 0.008;
-	const static double angularTolerance  = 0.05;
+	const static double angularTolerance  = 0.062;
 	const static double DX = 2.1;
 	const static double DXHorizontal = 2.5175;
 	const static double angularSpeed = 0.25;

@@ -22,8 +22,8 @@ unsigned int robotsCount = 0;
 vector<myTuple> locations;
 vector<int> team;
 vector<bool> lives;
+vector<robotState> states;
 allocation* al;
-int sekelton = -1;
 bool started = false;//The coverage started
 bool end = false;//Coverage should be stopped or completed successfully
 
@@ -38,13 +38,15 @@ ros::Subscriber steps_sub;
 ros::Publisher path_pub;
 
 
-int bury(int id);
+void bury(int id);
 string path2str(vector<pathCell*> path);
 string probs2str(vector<pathCell*> path);
 void teamStatusCallback(const ses::RobotStatus::ConstPtr& status_msg);
 void stepCallback(const ses::step::ConstPtr& step_msg);
 void publishPath(int robot_id,robotState state, vector<pathCell*> path);
 void handler(int signum);
+void checkStates();
+bool share(int robot);
 
 
 int main(int argc, char **argv)
@@ -62,6 +64,7 @@ int main(int argc, char **argv)
 
 	locations.resize(teamSize);
 	team.resize(teamSize);
+	states.resize(teamSize);
 
 	// Check that robot id is between 0 and MAX_ROBOTS_NUM
 	if (teamSize > MAX_ROBOTS_NUM || teamSize < 1 ) {
@@ -88,12 +91,12 @@ int main(int argc, char **argv)
 
 //alarm handler: Each alert checks the status of the robots on the team if they are still alive
 void handler(int signum) {
-	cout<<"monitor::alarm"<<endl;
-	cout<<"monitor:: live robots"<<robotsCount<<endl;
+	//cout<<"monitor::alarm"<<endl;
+	//cout<<"monitor:: live robots"<<robotsCount<<endl;
     for (int i = 0; i < lives.size(); ++i)
     {
     	if(!lives[i]){
-    		if(team[i]!= sekelton){
+    		if(states[i]!= dead){
     			robotsCount--;
     			bury(i);
     		}
@@ -102,6 +105,8 @@ void handler(int signum) {
     }
     if(robotsCount > teamSize || robotsCount <= 0){
     	cout<<"monitor::whole team is dead :("<<endl;
+    	grid* g = grid::getInstance();
+    	g->print();
     	end = true;
     }else{
     	alarm(12);
@@ -109,15 +114,54 @@ void handler(int signum) {
     }
 }
 
-int bury(int id){
-	team[id] = sekelton;
+void bury(int id){
+
+	//Update the allocation calss
+	al->unAssign(id);
+	al->bury(id);
+
+	//update grid
+	states[id] = dead;
 	myTuple place = locations[id];
 	grid* g = grid::getInstance();
 	cout<<"monitor:robot "<<id<<" died at "<<place.returnFirst()<<","<<place.returnSecond()<<endl;
 	pathCell* c = g->getCellAt(place.returnFirst(),place.returnSecond());
 	c->setProb(1.0); //No one can pass another cell where a robot has died
-	al->unAssign(id);//Update the provisioning department by leaving the robot
+
+
+	//find replac
+	vector<int>free;
+	vector<myTuple>locs;
+	for (int i = 0; i < states.size(); ++i)
+	{
+		if(states[i] == done){
+			free.push_back(team[i]);
+			locs.push_back(locations[i]);
+		}
+	}
+	if(free.size()==0){return;}
+	vector<int> reWork = al->restart(free, locs);
+	if(reWork.size()==0){
+		return;
+	}
+	cout<<":L:LL:L:L:LL:L:LL:L:L:L"<<endl;
+	for (int i = 0; i < reWork.size(); ++i)
+	{
+		cout<<"reWork.size()"<<reWork.size()<<endl;
+		cout<<")()()()()()"<<endl;
+		vector<pathCell*> path = al->allocate(locs[reWork[i]],reWork[i]);
+		if(path.size()==1){
+			path = al->areaCoverage(locs[reWork[i]],reWork[i]);
+			cout<<"5555"<<endl;
+			publishPath(reWork[i],covering,path);
+			cout<<"jkhk"<<endl;
+		}else{
+		cout<<":L:LL:22LL:L:L:L"<<endl;
+			publishPath(reWork[i],traveling,path);	
+		}
+	}
 }
+
 
 
 void teamStatusCallback(const ses::RobotStatus::ConstPtr& status_msg)
@@ -156,6 +200,7 @@ void teamStatusCallback(const ses::RobotStatus::ConstPtr& status_msg)
 				ses::RobotStatus status_msg;
 				status_msg.header.stamp = ros::Time::now();
 				status_msg.header.frame_id = "monitor";
+				status_msg.is_ready = true;
 				team_status_pub.publish(status_msg);
 			}
 		}
@@ -165,8 +210,16 @@ void teamStatusCallback(const ses::RobotStatus::ConstPtr& status_msg)
 
 void publishPath(int robot_id,robotState state, vector<pathCell*>path){
 
-	string probs = probs2str(path);
-	string newPath = path2str(path);
+	states[robot_id] = state;
+
+	string probs = "";
+	string newPath = "";
+
+	if(state != done){
+		 probs = probs2str(path);
+		 newPath = path2str(path);
+	}
+
 	//debug code
 	cout<< "monitor::path for "<<robot_id<< ": "<< newPath << endl;
 	//debug code
@@ -190,8 +243,9 @@ void stepCallback(const ses::step::ConstPtr& step_msg){
 	int y = step_msg->second_location;
 	myTuple m(x,y);
 	locations[robot_id] = m;
-	cout<<"monitor: "<<robot_id<<"is now at "<<locations[robot_id].returnFirst()<<","<<locations[robot_id].returnSecond()<<endl;
 	robotState state = (robotState)step_msg->state;
+	//states[robot_id] = state;
+	cout<<"monitor: "<<robot_id<<"is now at "<<locations[robot_id].returnFirst()<<","<<locations[robot_id].returnSecond()<<endl;
 	grid* g = grid::getInstance();
 	pathCell* c = g->getCellAt(step_msg->first_location, step_msg->second_location);
 
@@ -206,11 +260,11 @@ void stepCallback(const ses::step::ConstPtr& step_msg){
 	//
 
 	c->changeState(); //Update the state of the cell reported by the robot 
-	
+
 
 	//publish only if the status changed
-	if(state == idle || state == done){
-		vector<pathCell*> path = al->allocateStartArea(robot_id);
+	if(state == idle) {
+		vector<pathCell*> path = al->allocate(c->getLocation(),robot_id);
 		if(path.size()==1){
 			path = al->areaCoverage(c->getLocation(),robot_id);
 			publishPath(robot_id,covering,path);
@@ -224,6 +278,16 @@ void stepCallback(const ses::step::ConstPtr& step_msg){
 			vector<pathCell*> path = al->areaCoverage(c->getLocation(),robot_id);
 			if(path.size() == 0){//area of one cell
 				path = al->allocateNextArea(c-> getLocation(), robot_id);
+				if(path.size()==0){//no more areas
+					cout<<robot_id<<" befor share"<<endl;
+					if(share(robot_id)){cout<<robot_id<<" shared"<<endl;return;}
+					publishPath(robot_id,done,path);
+					states[robot_id] = done;
+					al->unAssign(robot_id);
+					cout<<"done!"<<endl;
+					checkStates();
+					return;
+				}
 				publishPath(robot_id,traveling,path);
 				return;
 			}
@@ -233,13 +297,103 @@ void stepCallback(const ses::step::ConstPtr& step_msg){
 		if(state == covering){//the robot finished to cover his area
 			vector<pathCell*> path = al->allocateNextArea(c-> getLocation(), robot_id);
 			if(path.size() == 0){
+				if(share(robot_id)){return;}
 				publishPath(robot_id,done,path);
+				states[robot_id] = done;
+				al->unAssign(robot_id);
+				cout<<"done!"<<endl;
+				checkStates();
 				return;
 			}
 			publishPath(robot_id,traveling,path);
 			return;
 		}
 	}
+}
+
+bool share(int robot){
+	cout<<robot<<" in share"<<endl;
+	
+	for (int i = 0; i < states.size(); ++i)
+	{
+			vector<myTuple> sublocations(2,myTuple(-1,-1));
+			sublocations[1] = locations[robot];//helper
+			cout<<"loc: "<<sublocations[1].returnFirst()<<","<<sublocations[1].returnSecond()<<endl;
+			sublocations[0] = locations[i];//other
+
+		if (i!=robot && (states[i]==covering || states[i]==traveling) && al->isPoint(sublocations,robot,i))
+		{
+			cout<<"robot "<<robot<<" helps "<<i<<endl;
+
+			
+			//other
+			vector<pathCell*> otherPath = al->allocate(locations[i],i);
+			if(otherPath.size()==1){
+				otherPath = al->areaCoverage(locations[i],i);
+				publishPath(i,covering,otherPath);
+			}else{
+				publishPath(i,traveling,otherPath);
+			}
+			
+
+			//helper
+			vector<pathCell*> helperPath = al->allocate(locations[robot],robot);
+			publishPath(robot,traveling,helperPath);
+			
+			
+			////debug code
+			//cout<<"otherPath: "<<endl<<"size: " <<otherPath.size()<<endl;
+			//for (int j = 0; j < otherPath.size(); ++j)
+			//{	
+			//	cout << otherPath[j]->getLocation().returnFirst();
+			//	cout<<";";
+			//	cout << otherPath[j]->getLocation().returnSecond();
+			//	if (i!= otherPath.size() -1) {
+			//		cout<< " ";
+			//	}
+			//}
+
+			//cout<<"helperPath: "<<endl<<"size: " <<helperPath.size()<<endl;
+			//for (int j = 0; j < helperPath.size(); ++j)
+			//{	
+			//	cout << helperPath[j]->getLocation().returnFirst();
+			//	cout<<";";
+			//	cout << helperPath[j]->getLocation().returnSecond();
+			//	if (i!= helperPath.size() -1) {
+			//		cout<< " ";
+			//	}
+			//}
+
+			//debug code
+			return true;	
+		}
+	}
+	return false;
+
+}
+
+void checkStates(){	
+	for (int i = 0; i < states.size(); ++i)
+	{
+		if (!(states[i]==dead ||states[i]==done))
+		{
+			cout<<"first..."<<endl;
+			return;
+		}
+	}
+	grid* g = grid::getInstance();
+    g->print();
+	cout<<"Coverage End!"<<endl;
+
+	alarm(0);
+	//publish a message to all robots that they can close themselfs
+	ses::RobotStatus status_msg;
+	status_msg.header.stamp = ros::Time::now();
+	status_msg.header.frame_id = "monitor";
+	status_msg.is_ready = false;
+	team_status_pub.publish(status_msg);
+
+	exit(0);
 }
 
 string path2str(vector<pathCell*> path){
@@ -264,7 +418,6 @@ string probs2str(vector<pathCell*> path){
 	{
 		ostringstream ss;
 		ss << path[i]->getProb();
-		cout<< ss.str() <<endl;
 		newP +=  ss.str(); 
 		if (i!= path.size() -1) {
 			newP += " ";
@@ -273,4 +426,3 @@ string probs2str(vector<pathCell*> path){
 	return newP;
 
 }
-

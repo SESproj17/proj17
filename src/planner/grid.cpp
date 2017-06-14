@@ -86,7 +86,7 @@ void grid::initGrid() {
 
 void grid::readMap(const nav_msgs::OccupancyGrid& map) {
 	int currCell = 0;
-    ROS_INFO(" to become available");
+    //ROS_INFO(" to become available");
 	ros::NodeHandle nh;
     this->rows = map.info.height;
     this->cols = map.info.width;
@@ -94,7 +94,7 @@ void grid::readMap(const nav_msgs::OccupancyGrid& map) {
     for (int i = 0; i < rows; i++) {
         myGrid[i].resize(cols);   
     }
-    cout << "start " << endl;
+    //cout << "start " << endl;
     for (int i = rows - 1; i >= 0; i--) {
         for (int j = 0; j < cols; j++) {
             myGrid[i][j] = (float)(map.data[currCell])/100;

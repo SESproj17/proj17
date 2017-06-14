@@ -1,110 +1,79 @@
 #include "splitBetweenRobots.h"
-
+#include <stack> 
 
 
 //the vector of the robots is in the according order of the locations order of the robots
 splitBetweenRobots::splitBetweenRobots(subArea* areaToSplit, vector<myTuple> locations){
-	cout<<"splitBetweenRobots:constructor"<<endl;
+	//cout<<"splitBetweenRobots:constructor"<<endl;
 	initialArea = areaToSplit;
-	initialArea->print();
+	//initialArea->print();
 	robotLocations = locations;
-	cout<<"splitBetweenRobots:robotLocations size "<<robotLocations.size()<<endl;
+	//cout<<"splitBetweenRobots:robotLocations size "<<robotLocations.size()<<endl;
 }
 
 splitBetweenRobots::splitBetweenRobots(){
 	
 }
 
+vector<vector<pathCell*> > splitBetweenRobots::privateSplit(int k){	
+	//vector<vector<subArea*> > preSpliting = initialArea->getInheritance();
+	//if(preSpliting.size()> 1){
+	//	cout<<"splitBetweenRobots:: unConnected left area"<<
+
+	//}
+	vector<pathCell*> path = initialArea->coverge(robotLocations[0]);
+	//cout<<"path size: "<<path.size()<<endl;
+	int amount = path.size() / k;
+	//remainder = cells % k;
+	vector<vector<pathCell*> > splitedPath;
+	splitedPath.resize(k);
+	
+	for (int i = 0; i < k-1; ++i)
+	{
+		splitedPath[i].insert(splitedPath[i].end(), path.begin()+i*amount, path.begin()+(i+1)*amount);//-1?
+	}
+	splitedPath[k-1].insert(splitedPath[k-1].end(),path.begin()+(k-1)*amount,path.end());
+
+/*
+	//check:
+	for (int i = 0; i < splitedPath.size(); ++i)
+	{
+		cout<<"I:"<<i<<endl;
+		vector<pathCell*> subpath = splitedPath[i];
+		cout<<subpath.size()<<endl;
+		for (int j = 0; j < subpath.size(); ++j)
+		{	
+			cout << subpath[j]->getLocation().returnFirst();
+			cout<<";";
+			cout << subpath[j]->getLocation().returnSecond();
+			if (i!= subpath.size() -1) {
+				cout<< " ";
+			}
+		}
+		cout<<endl;
+	}
+
+	exit(0);
+	*/
+	
+	return splitedPath;
+
+}
+
 //returns all the subareas of one sub area that was splited
 vector<subArea*> splitBetweenRobots::split(){
-	int k = initialArea->getinitialRobots().size();
+	cout<<"split:Warning- only for 2 now!!"<<endl;
+	vector<vector<pathCell*> > splitedPath = privateSplit(2);
 	vector<subArea*>newAreas;
-	vector<vector<pathCell*> > splitedGraph = graphPartition(initialArea->getCells(),k);
-
-	for (int i = 0; i < k; ++i)
-	{
-		subArea* littleArea = new subArea(vectorToMatrix(splitedGraph[i]),initialArea->getProb(),initialArea->getLevel());
-		newAreas.push_back(littleArea);
-	}
+	newAreas.resize(2);
+	grid* g = grid::getInstance();
+	newAreas[0] = new subArea(g->getRows(),g->getCols(),splitedPath[0],initialArea->getProb(),initialArea->getLevel());	
+	newAreas[1] = new subArea(g->getRows(),g->getCols(),splitedPath[1],initialArea->getProb(),initialArea->getLevel());	
 	return newAreas;
 }
 
-//create matrices of pathCells* for input to create subArea
-vector<vector<pathCell*> > splitBetweenRobots::vectorToMatrix(vector<pathCell*> vec){
-	int rows, cols;
-	grid* grd = grid::getInstance();
-	rows = grd->getRows();
-	cols = grd->getCols();
-	vector<vector<pathCell*> > matrix(rows,vector<pathCell*>(cols, NULL));
-	for(int i = 0; i < vec.size();i++){
-		myTuple tup = vec[i]->getLocation();
-		int f = tup.returnFirst();
-		int s = tup.returnSecond();
-		matrix[f][s] = vec[i];
-	}
-	return matrix;
-}
 
-vector<vector<pathCell*> > splitBetweenRobots::graphPartition(vector<pathCell*>graph,int k){
 
-	int remainder = 0;
-	int cells = graph.size();
-	cout<<"graphPartition:cells "<<cells<<endl;
-	vector<bool> visited(cells, false);
-	vector<pathCell*> last;
-	//how many cells in each vector
-	int amount = cells / k;
-	vector<vector<pathCell*> > solution(k-1, vector<pathCell*>(amount,NULL));
-	//cout<<"graphPartition:solution size "<<solution.size()<<endl;
-	//if the number of cells does not divided in k
-	if(cells % k != 0){
-		remainder = cells % k;
-		last.resize(amount + remainder, NULL);
-	}else{
-		last.resize(amount, NULL);
-	}
-	solution.push_back(last);
-	cout<<"graphPartition:solution[0] size "<<solution[0].size()<<endl;
-	cout<<"graphPartition:solution[1] size "<<solution[1].size()<<endl;
-	//the number of the cell that we are adding him and his neibours to the solution
-	for(int i = 0; i < k;i++){
-		for(int q = 0; q < cells; q++){
-			for(int j = 0;j < amount;){
-				if(visited[q] == false){			
-					solution[i][j] = graph[q];//add yourself
-					visited[q] = true;
-					j++;
-					vector<pathCell*> neib = graph[q]->getNeighbors();
-					cout<<"graphPartition:neib size "<<neib.size()<<endl;
-					for(int r = 0; r < neib.size();r++){
-						pathCell* c = neib[r];
-						cout<<"graphPartition:c as n "<<c->getProb()<<endl;
-						if(graph[q]->getProb()==c->getProb()){
-							int index = findLocation(c, graph);
-							if(visited[index] == false){
-								visited[index] = true;
-								solution[i][j] = c;
-								j++;
-							}
-						}
-					}
-				}else{
-					q++;}//move to the next cell in graph
-			}
-		}
-		cout<<"graphPartition:0th-0th "<<solution[0][0]->getProb()<<endl;
-	}
-	cout<<"graphPartition:here "<<endl;
-
-	//the last vector -- add the remain cells
-	for(int i = 0; i < cells; i++){
-		if(visited[i] == false){
-			solution[k-1].push_back(graph[i]); 
-		}
-	}
-
-	return solution;
-}
 
 //helps to find the location of a cell in vector according to his
 // location
@@ -130,32 +99,36 @@ vector<subArea* > splitBetweenRobots::hungarianMethod(){
 	cout<<"hungarianMethod:entered "<<endl;
 	int k = initialArea->getinitialRobots().size();
 
-	//split
+	//init
 	vector<vector<float> >costMatrix;
 	costMatrix.resize(k);
 		for (int l = 0; l < k; ++l) {
 			costMatrix[l].resize(k);
 		}
 	
-
-
 	vector<subArea*>newAreas;
 
-	vector<vector<pathCell*> > splitedGraph = graphPartition(initialArea->getCells(),k);
+	//split
+	vector<vector<pathCell*> > splitedGraph = privateSplit(k);
 	cout<<"hungarianMethod:after graphPartition! "<<endl;
+
 	for (int i = 0; i < k; ++i)
 	{
-		subArea* littleArea = new subArea(vectorToMatrix(splitedGraph[i]),initialArea->getProb(),initialArea->getLevel());
+		cout<<"hungarianMethod:before sa constructor "<<endl;
+		grid* g = grid::getInstance();
+		subArea* littleArea = new subArea(g->getRows(),g->getCols(),splitedGraph[i],initialArea->getProb(),initialArea->getLevel());	
+		//littleArea->print();
+		cout<<"hungarianMethod:after sa constructor "<<endl;
+
 		newAreas.push_back(littleArea);
 		for (int j = 0; j < k; ++j)
 		{	//robots are in columns
 			safestPath sp(littleArea->getCells());
 			costedPath* cp = sp.find(robotLocations[j]);
 			costMatrix[i][j] = cp->getCost();
-
 		}
-
 	}
+
 	//convert to ints
 	int rows,cols;
 	rows = costMatrix.size();
@@ -167,9 +140,11 @@ vector<subArea* > splitBetweenRobots::hungarianMethod(){
 		}
 	}
 
+	cout<<"hungarianMethod:before hungarian() "<<endl;
+
 	Hungarian* hung = new Hungarian(intMatrix,rows,cols,HUNGARIAN_MODE_MINIMIZE_COST);
 	hung->solve();
-	//return hung->assignment();
+	
 	vector<subArea*> assignment = convert(hung->assignment(), newAreas);
 	cout<<"hungarianMethod:assignment size "<<assignment.size()<<endl;
 	return assignment;

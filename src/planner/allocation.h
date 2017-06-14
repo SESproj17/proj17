@@ -22,15 +22,19 @@ private:
 	areas2Robobts* a2r;//areas finder
 
 	void assign(subArea* area, int robot);
+	vector<pathCell*> findAreaToShare(myTuple mylocation, myTuple otherLocation,int myId, int otherId);
 	
 	
 public:
 	allocation(vector<int> givenRobots, vector<myTuple> startLocations);
 	void unAssign(int robot);
-	vector<pathCell*> allocateStartArea(int robot_id);
+	void bury(int robot);
+	bool isPoint(vector<myTuple>locations, int helper, int other);
+	vector<int> restart(vector<int>free,vector<myTuple> locations);
+	vector<pathCell*> allocate(myTuple location,int robot_id);
 	vector<pathCell*> allocateNextArea(myTuple location, int robot_id);
 	vector<pathCell*> areaCoverage(myTuple location,int robot_id);
-	vector<pathCell*> findAreaToShare(myTuple mylocation, myTuple otherLocation,int myId, int otherId);
+	
 };
 
 #endif

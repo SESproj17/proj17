@@ -3,12 +3,14 @@
 
 moveRobot::moveRobot(int firstStart, int secondStart, int givenrobot_id, string givenLizi){
 	canMove = false; //Is there a path where the robot can go
+	canMoveObst = true;
 	ros::NodeHandle  nh;
 	this->lizi = givenLizi;
 	publisher  = nh.advertise<geometry_msgs::Twist>("/lizi_"+lizi+"/diff_driver/command", 10);	
 	steps_pub = nh.advertise<ses::step>("steps", 10);
 	path_sub = nh.subscribe("paths", 1, &moveRobot::pathCallback, this);
-	laserSub = nh.subscribe("scan", 1, &moveRobot::scanCallback, this);
+	string scanString = "/lizi_" + lizi + "/scan";
+	laserSub = nh.subscribe(scanString, 1, &moveRobot::scanCallback, this);
 	me = new robot(firstStart, secondStart);
 	robot_id = givenrobot_id;
 	getPose();
@@ -35,7 +37,15 @@ void moveRobot::scanCallback(const sensor_msgs::LaserScan::ConstPtr& scan)
 
     if (isObstacleInFront) {
         ROS_INFO("Stop!");
-        canMove = false;
+	    for (int i = 0; i < 20; i++) {
+			geometry_msgs::Twist stopCommand;
+			stopCommand.linear.x = 0;
+			publisher.publish(stopCommand);
+			//cout << i << endl;
+		}
+        canMoveObst = false;
+    } else {
+    	canMoveObst = true;
     }
 }
 
@@ -47,7 +57,9 @@ void moveRobot::pathCallback(const ses::Path::ConstPtr& path_msg){
 		me->setState((robotState)path_msg->state);
 		me->setPath(path_msg->path);
 		me->setProbs(path_msg->probs);
-		canMove = true;
+		if((robotState)path_msg->state != done){
+			canMove = true;
+		}
 	}
 }
 
@@ -72,25 +84,36 @@ void moveRobot::publishStep(){
 
 void moveRobot::start(){
 	publishStep();
-	
+
 	while (true) {
 		ros::spinOnce();
-		if(canMove){
+
+		if(canMove && canMoveObst){
 			
+			// //debug code
+			// if (me->getLocation()->returnFirst() == 0 && me->getLocation()->returnSecond() == 0 && lizi == "2") {
+			// 	ROS_INFO("DIE IN HERE!");
+			// 	exit(1);
+			// }
+			//debug code
 			vector<myTuple*> path = me->getPath();
 			int size = path.size();
-			if(size == 1){cout<<me->getLocation()->returnFirst()<<","<<me->getLocation()->returnSecond()<<endl;}
+			//if(size == 1){cout<<"moveRobot:problemmm of shorted path? "<<me->getLocation()->returnFirst()<<","<<me->getLocation()->returnSecond()<<endl;}
+			ROS_INFO("DONT DIE!");
+			cout << lizi << " with path size " << size << endl;
 			int x = (path[0]->returnFirst() == me->getLocation()->returnFirst());
 			int y = (path[0]->returnSecond()== me->getLocation()->returnSecond());
 			
 			if(size>1 && path[0]->returnFirst()== me->getLocation()->returnFirst() && path[0]->returnSecond()== me->getLocation()->returnSecond()){
 				me->move();
+				cout<<"before movment@"<<endl;
 				moveToNext(path[0], path[1]);
+				cout<<"after movement@"<<endl;
 				publishStep();
-				if(!me->imAlive()){
+				/*if(!me->imAlive()){
 					ROS_INFO("Robot %d died ", robot_id);
 					exit(0);
-				}
+				}*/
 				ros::spinOnce();
 			}else{
 				canMove = false;
@@ -198,12 +221,17 @@ void moveRobot::stepLeftRight(Direction d) {
 void moveRobot::stepUpDown(Direction d) {
 	getPose();
 	int dir = 1;
-	float goal;
+	float goal = 0;
 	bool isUp = true;
-	if (d == UP) {dir = -1;isUp = false;}
+	//if (d == UP) {dir = -1;isUp = false;}
 	//cout << "moveRobot::stepUpDown dx " << me->getLocation()->returnFirst()*DX*(-1)*dir << endl;
-	//cout << "moveRobot::stepUpDown startPoseY " << startPoseY << endl;
-	goal = me->getLocation()->returnFirst()*DX*(-1)*dir + this->startPoseY;
+	//cout << "moveRobot::" << lizi << "::" << "stepUpDown startPoseY " << startPoseY << endl;
+	if (d == DOWN) {
+		goal = me->getLocation()->returnFirst()*DX*(-1) + this->startPoseY;
+	}else {
+		goal = me->getLocation()->returnFirst()*DX + this->startPoseY;
+	}
+	
 	float speed = 0.35;
 
 	geometry_msgs::Twist rotateCommand;
@@ -211,9 +239,9 @@ void moveRobot::stepUpDown(Direction d) {
 	rotateCommand.linear.x = dir*speed;
 	// How fast will we update the robot's movement
 	ros::Rate rate(50);
-	//cout << "moveRobot::goal " << goal << endl;
-	//cout << "moveRobot::stepUpDown currentLocationY " << currentLocationY << endl;
-	//cout << "moveRobot::stepUpDown tolarence " << abs(currentLocationY - goal) << endl;
+	 cout << "moveRobot::goal " << lizi << ":: " << goal << endl;
+	 cout << "moveRobot::stepUpDown currentLocationY " << lizi << ":: " <<  currentLocationY << endl;
+	// cout << "moveRobot::stepUpDown tolarence " << abs(currentLocationY - goal) << endl;
 	// Rotate until the robot reaches the target angle
 	while (ros::ok() && abs(currentLocationY - goal) > placeTol * 70) {
 		//cout << "moveRobot::stepUpDown currentLocationY " << currentLocationY << endl;
