@@ -89,9 +89,10 @@ bool robot::imAlive() {
 	srand(time(NULL));
 	int x;float y;
 	x = rand()%11;
-	y = float(x)/10;
-	//y = y*4;
+	y = float(x)/10 + 1;
+	//y = y*40;
 	if (y > probs[0]) {return true;}
 	this->state = dead;
 	return false;
 }
+float robot::getProb() { return this->probs[0];}

@@ -24,6 +24,7 @@ public:
 	myTuple* getLocation();
 	vector<myTuple*> getPath();
 	bool isTheLast();
+	float getProb();
 	bool imAlive();
 	void move();
 

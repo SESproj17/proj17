@@ -9,7 +9,7 @@ limit- the highest probability
 */
 vector<area*> algo1::make_areas(float jump,float limit) {
 	int i,j,rows,cols;
-	float level;
+	double level;
 	ros::NodeHandle nh;
 	nh.getParam("min_cost",level);
 	
@@ -117,7 +117,8 @@ vector<subArea*> algo1::dfs(area* graph,int rows,int cols){
 					//go over the neighbours if some of them are 
 					//not visited push them into the stack
 					vector<pathCell*>neib = s->getNeighbors();
-					//cout<<"sizeOfneibs: "<<neib.size()<<endl;
+					
+
 					for (int i =0; i< neib.size();i++){
 						int first,second;
 						if(neib[i]->getLevel() == graph->getLevel()){
@@ -129,8 +130,7 @@ vector<subArea*> algo1::dfs(area* graph,int rows,int cols){
 							}
 						}
 					}
-					//cout<<"sizeOstack: "<<stack.size()<<endl;
-					//exit(0);
+					
 				}
 				//create an area and add it to the vector
 				subArea* connectedArea = new subArea(subA,graph->getProb(),graph->getLevel());
@@ -154,8 +154,3 @@ vector<subArea*> algo1::dfs(area* graph,int rows,int cols){
 	}
 	return connectedList;
 }
-
-
-
-
-

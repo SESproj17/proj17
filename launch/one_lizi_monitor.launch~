@@ -1,0 +1,14 @@
+<launch>
+
+        <param name="startX" value="5.934489" />
+        <param name="startY" value="19.723273" />
+
+        <param name="lengthX" value="5" />
+        <param name="lengthY" value="5" />
+
+        <param name="height" value="16.228847" />
+        <param name="width" value="21.780933" />
+
+	<include file="$(find ses)/launch/lizi.launch"/>
+	
+</launch>

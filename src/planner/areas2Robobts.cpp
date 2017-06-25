@@ -10,22 +10,34 @@ areas2Robobts::areas2Robobts(){
 	nh.getParam("max_cost",max);
     algo1* al = new algo1();
     vector<area*> vc = al->make_areas(jump,max);
+    for (int i = 0; i < vc.size(); ++i)
+    {
+    	vc[i]->print();
+    }
     areas = al->getConnectedAreas(vc);
+    for (int i = 0; i < areas.size(); ++i) {
+    	cout << "areas2Robobts::areas2Robobts " << areas[i].size() << endl;
+    }
 }
 
 subArea* areas2Robobts::lookForNewArea(myTuple location){
-	//cout<<"lookForNewArea:start"<<endl;
 	vector<subArea*> a = sortedAvailableAreasPerLocation(location, NotAssigned);
-	//cout<<"lookForNewArea:nuber of safest unassiged areas: "<<a.size()<<endl;
 	if(a.size()>0){
 		return a[0];
 	}
-	//cout<<"lookForNewArea:no more areas to cover"<<endl;
 	return NULL;	
 }
 
 vector<subArea*> areas2Robobts::statrAllocation(vector<myTuple> teamStartLocations)
 {	
+	grid* g = grid::getInstance();
+	for (int i = 0; i <teamStartLocations.size(); ++i)
+	{
+		int x = teamStartLocations[i].returnFirst();
+		int y = teamStartLocations[i].returnSecond();
+		pathCell* c = g->getCellAt(x,y);
+		c->changeState();
+	}
 	//connect robots to areas
 	vector<subArea*> sortedAreas;
 	for(int i = 0;i < teamStartLocations.size();i++){	
@@ -58,35 +70,19 @@ vector<subArea*> areas2Robobts::statrAllocation(vector<myTuple> teamStartLocatio
 			for (int i = 0; i < idsRobotsOfA.size(); ++i)
 			{
 				assignment[idsRobotsOfA[i]] = splited[i];
-				//assignment[idsRobotsOfA[i]]->print();
 			}
 		} else if (idsRobotsOfA.size()==1){
 			int id = a->getinitialRobots()[0];
 			assignment[id] = a;
-			cout<<"statrAllocation::area "<<endl;
-			a->print();
-			cout<<" assigned to robot "<<id<<endl;
 		}
 	}
-
-
-	//debug code
-	vector<subArea*> empty;
-	areas[0] = empty;
-	vector<subArea*> empty1;
-	areas[1] = empty1;
-	vector<subArea*> empty2;
-	areas[2] = empty2;
-	vector<subArea*> empty3;
-	areas[3] = empty3;
-	//debug code
 	return assignment;
 }
 
 vector<subArea*> areas2Robobts::sortedAvailableAreasPerLocation(myTuple location, AreaState askedState){
 	vector<costedArea*> costedAreas;
 	vector<subArea*> safests = getSafeAreas();
-	//cout<<"sortedAvailableAreasPerLocation:safests.size ; "<<safests.size()<<endl;
+	cout<<"safests"<<safests.size();
 	for(int j = 0;j < safests.size();j++){
 		subArea* area = safests[j];
 		if(area->getState() == askedState){
@@ -94,12 +90,12 @@ vector<subArea*> areas2Robobts::sortedAvailableAreasPerLocation(myTuple location
 		}
 	}
 	sort (costedAreas.begin(), costedAreas.end(), compByCost);//by cost
-	//cout<<"after sort"<<endl;
 	vector<subArea*> sortedAreas;
 	for (int i = 0; i < costedAreas.size(); ++i)
 	{
 		sortedAreas.push_back(costedAreas[i]->getArea());
 	}
+	cout<<"sortedAvailableAreasPerLocation"<<sortedAreas.size();
 	return sortedAreas;
 }
 
@@ -109,16 +105,13 @@ input: area(oldArea) that splited, new sub areas
 the function marked the oldArea as covered and add the new areas to the pool
 */
 void areas2Robobts::addSplited(subArea* oldArea, vector<subArea*> newSplitedAreas){
-	//cout<<"addSplited:new areas "<<newSplitedAreas.size()<<endl;
-	//cout<<"addSplited:areas before"<<areas[0].size()<<endl;
 	oldArea->changeState(Covered);
 	for (int i = 0; i < newSplitedAreas.size(); ++i)
 	{
 		add(newSplitedAreas[i]);
 	}
-	//cout<<"addSplited:areas after"<<areas[0].size()<<endl;
-
 }
+
 //add new robot to the area's list at it's level
 void areas2Robobts::add(subArea* added){
  	int level = added->getLevel();
@@ -129,25 +122,32 @@ void areas2Robobts::add(subArea* added){
 
 vector<subArea*> areas2Robobts::getSafeAreas(){
 	int i = 0;
+	if(areas.size() == 0){
+		vector<subArea*> empty;
+		return empty;
+	}
+	for (int a = 0; a < areas.size(); ++a) {
+		vector<subArea*> unCoveredAtLevel;
+		for (int b = 0; b < areas[a].size(); ++b) {
+			if (areas[a][b]->getState() != Covered && areas[a][b]->getState() == NotAssigned) {
+				unCoveredAtLevel.push_back(areas[a][b]);	
+			}
+		}
+		areas[a] = unCoveredAtLevel;
+	}
+
 	while(areas[i].size() == 0){
-		//cout<<"getSafeAreas:areas["<<i<<"].size() "<<areas[i].size()<<endl;
 		i++;
-		if(i == areas.size()){
-			vector<subArea*> empty;
-			return empty;
-		}
 	}
-	vector<subArea*> level = areas[i];
-	vector<subArea*> unCoveredAtLevel;
-	//cout<<"getSafeAreas:level.size() "<<level.size()<<endl;
-	for (int j = 0; j < level.size(); ++j)
-	{
-		if (level[j]->getState() != Covered)
-		{
-			unCoveredAtLevel.push_back(level[j]);
-		}
+
+	if (i == areas.size()) {
+		vector<subArea*> empty;
+		return empty;
 	}
-	areas[i] = unCoveredAtLevel;
+
+	cout << "areas2Robobts::getSafeAreas " << areas[i].size() << " " << i << endl;
+
+
 	return areas[i];
 }
 

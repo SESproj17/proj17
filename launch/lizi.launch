@@ -1,0 +1,15 @@
+<launch>
+
+        <param name="startX" value="5.934489" />
+        <param name="startY" value="19.723273" />
+
+        <param name="lengthX" value="5" />
+        <param name="lengthY" value="5" />
+
+        <param name="height" value="16.228847" />
+        <param name="width" value="21.780933" />
+
+	<node name="tf" pkg="tf" type="static_transform_publisher" args="5.934489 19.723273 0.039000 0 0.000002 0 /map /lizi_1/diff_driver/odometry 100" />
+	<node name="Robot_0" pkg="ses" type="robot" args="1 0 0" output="screen"/>
+	
+</launch>

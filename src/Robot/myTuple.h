@@ -6,13 +6,13 @@
 
 class myTuple {
 private:
-	int x;
-	int y;
+	float x;
+	float y;
 public:
-	myTuple(int givenX,int givenY);
-	int returnFirst();
+	myTuple(float givenX,float givenY);
+	float returnFirst();
 	bool equals(myTuple* other);
-	int returnSecond();
+	float returnSecond();
 };
 
 

@@ -135,9 +135,9 @@
       <pose>18.4217 -1 0 0 -0 0</pose>
     </model>
     <state world_name='default'>
-      <sim_time>72 177000000</sim_time>
-      <real_time>72 349099246</real_time>
-      <wall_time>1492969721 298500725</wall_time>
+      <sim_time>143 763000000</sim_time>
+      <real_time>71 670371039</real_time>
+      <wall_time>1497539122 786930996</wall_time>
       <model name='ground_plane'>
         <pose>0 0 0 0 -0 0</pose>
         <link name='link'>
@@ -148,9 +148,9 @@
         </link>
       </model>
       <model name='marker_0'>
-        <pose>18.4217 -1 0.001 1e-06 -5e-06 1.5963</pose>
+        <pose>15.9678 12.0455 0.001 1e-06 -1.05879e-22 1.5963</pose>
         <link name='marker'>
-          <pose>18.4217 -1 0.001 1e-06 -5e-06 1.5963</pose>
+          <pose>15.9678 12.0455 0.001 1e-06 -1.05879e-22 1.5963</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
@@ -159,7 +159,7 @@
     </state>
     <gui fullscreen='0'>
       <camera name='user_camera'>
-        <pose>57.4698 -33.1066 19.5844 0 0.275643 2.35619</pose>
+        <pose>86.4826 -32.5417 30.1515 0.000189 0.053807 2.47573</pose>
         <view_controller>orbit</view_controller>
       </camera>
     </gui>

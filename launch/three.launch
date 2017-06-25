@@ -3,16 +3,17 @@
         <param name="min_cost" value="0.1" />
         <param name="max_cost" value="0.4" />
         <param name="jump_cost" value="0.1" />
-        <param name="group_size" value="2" />
+        <param name="group_size" value="3" />
 
-        <param name="startX" value="4.379260" />
-        <param name="startY" value="20.804553" />
+        <param name="width" value="21.913743" />
+        <param name="height" value="16.606268" />
 
         <param name="lengthX" value="10" />
         <param name="lengthY" value="10" />
 
-        <param name="height" value="18.246333" />
-        <param name="width" value="22.799319" />
+        <param name="startX" value="8.041645" />
+        <param name="startY" value="6.772315" />
+
 
 	<arg name="map_file" default="$(find ses)/world/labs.yaml"/>
 
@@ -28,15 +29,16 @@
 	<env name="GAZEBO_RESOURCE_PATH" value="$(find ses):$(optenv GAZEBO_MODEL_PATH)"/>
 
 
-	<node name="tf" pkg="tf" type="static_transform_publisher" args="22.248449 21.017353 0.039000 0 0.000002 0 /map /lizi_1/diff_driver/odometry 100" />
-	<node name="Robot_0" pkg="ses" type="robot" args="1 0 0" output="screen"/> 
-<!--
-	<node name="tf2" pkg="tf" type="static_transform_publisher" args="27.121142 21.011111 0.039000 0 0.000002 0 /map /lizi_2/diff_driver/odometry 100" />
-	<node name="Robot_1" pkg="ses" type="robot" args="2 0 9" output="screen"/>
--->
-<!--	<node name="tf3" pkg="tf" type="static_transform_publisher" args="4.774928 16.799536 0.038998 0 0.000002 0 /map /lizi_3/diff_driver/odometry 100" />
-	<node name="Robot_3" pkg="ses" type="robot" args="3 2 0" output="screen"/>
--->
+	<node name="tf" pkg="tf" type="static_transform_publisher" args="17.126034 -3.897094 0.039000 0 0.000002 0 /map /lizi_1/diff_driver/odometry 100" />
+	<node name="Robot_0" pkg="ses" type="robot" args="1 4 6" output="screen"/> 
+
+
+	<node name="tf2" pkg="tf" type="static_transform_publisher" args="8.713203 6.489923 0.038998 0 0.000002 0 /map /lizi_2/diff_driver/odometry 100" />
+	<node name="Robot_1" pkg="ses" type="robot" args="2 0 1" output="screen"/> 
+
+	<node name="tf3" pkg="tf" type="static_transform_publisher" args="8.041645 6.772315 0.038998 0 0.000002 0 /map /lizi_3/diff_driver/odometry 100" />
+	<node name="Robot_2" pkg="ses" type="robot" args="3 0 0" output="screen"/> 
+
         <include file="$(find ric_gazebo)/launch/lizi_gazebo.launch"/>
 
   	<node name="monitor" pkg="ses" type="monitor" output="screen"/> 

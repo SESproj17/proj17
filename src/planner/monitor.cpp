@@ -17,7 +17,7 @@ using namespace std;
 
 enum robotState {idle,traveling,covering,done,dead};
 
-unsigned int teamSize;
+int teamSize;
 unsigned int robotsCount = 0;
 vector<myTuple> locations;
 vector<int> team;
@@ -51,10 +51,17 @@ bool share(int robot);
 
 int main(int argc, char **argv)
 {
-	//nh.getParam("group_size",teamSize);
+	
+	ros::init(argc, argv, "monitor");
+	ros::NodeHandle nh;
 
-	char *teamSizeStr = argv[1];
-	teamSize = atoi(teamSizeStr);
+	steps_sub = nh.subscribe("steps", 1, &stepCallback);
+	team_status_sub = nh.subscribe("team_status", 1, &teamStatusCallback);
+
+	team_status_pub = nh.advertise<ses::RobotStatus>("team_status", 10);
+	path_pub = nh.advertise<ses::Path>("paths", 10);
+	
+	nh.getParam("group_size",teamSize);
 
 	lives.resize(teamSize);
 	for (int i = 0; i < teamSize; ++i)
@@ -65,21 +72,6 @@ int main(int argc, char **argv)
 	locations.resize(teamSize);
 	team.resize(teamSize);
 	states.resize(teamSize);
-
-	// Check that robot id is between 0 and MAX_ROBOTS_NUM
-	if (teamSize > MAX_ROBOTS_NUM || teamSize < 1 ) {
-	    ROS_ERROR("The team size must be an integer number between 1 and %d", MAX_ROBOTS_NUM);
-	    return -1;
-	}
-
-	ros::init(argc, argv, "monitor");
-	ros::NodeHandle nh;
-
-	team_status_pub = nh.advertise<ses::RobotStatus>("team_status", 10);
-	team_status_sub = nh.subscribe("team_status", 1, &teamStatusCallback);
-
-	path_pub = nh.advertise<ses::Path>("paths", 10);
-	steps_sub = nh.subscribe("steps", 1, &stepCallback);
 
 	ROS_INFO("Waiting for robots to connect...");
 
@@ -144,19 +136,13 @@ void bury(int id){
 	if(reWork.size()==0){
 		return;
 	}
-	cout<<":L:LL:L:L:LL:L:LL:L:L:L"<<endl;
 	for (int i = 0; i < reWork.size(); ++i)
 	{
-		cout<<"reWork.size()"<<reWork.size()<<endl;
-		cout<<")()()()()()"<<endl;
 		vector<pathCell*> path = al->allocate(locs[reWork[i]],reWork[i]);
 		if(path.size()==1){
 			path = al->areaCoverage(locs[reWork[i]],reWork[i]);
-			cout<<"5555"<<endl;
 			publishPath(reWork[i],covering,path);
-			cout<<"jkhk"<<endl;
 		}else{
-		cout<<":L:LL:22LL:L:L:L"<<endl;
 			publishPath(reWork[i],traveling,path);	
 		}
 	}
@@ -174,6 +160,7 @@ void teamStatusCallback(const ses::RobotStatus::ConstPtr& status_msg)
 			ROS_INFO("Robot %d is ready!\n", robot_id);
 			int x = status_msg->start_x;
 			int y = status_msg->start_y;
+
 			myTuple m(x,y);
 			locations[robot_id] = m;
 			team[robot_id] = robot_id;
@@ -181,14 +168,23 @@ void teamStatusCallback(const ses::RobotStatus::ConstPtr& status_msg)
 			if (robotsCount == teamSize) {
 				ROS_INFO("All robots GO!");
 				
-				//ctor<myTuple> locations(teamSize,myTuple(-1,-1));
+				
 				vector<int> team(teamSize,-1);
 				for (int i = 0; i < teamSize; ++i)
 				{
-					//locations[i] = locs[i];
 					team[i] = i;
 				}
+				
+				//debug code
+				for (int i = 0; i <team.size(); ++i)
+				{
+					cout<<team[i]<<";";
+				}
+				cout<<endl;
+				//debug code
+
 				//Initialization of the allocation class for the robots that arrived
+
 			 	al = new allocation(team,locations);
 			 	started = true;
 
@@ -250,6 +246,20 @@ void stepCallback(const ses::step::ConstPtr& step_msg){
 	pathCell* c = g->getCellAt(step_msg->first_location, step_msg->second_location);
 
 	//debug code
+	cout<<"monitor:stepCallback::step of robot "<<robot_id<<endl;
+	for (int i = 0; i <team.size(); ++i)
+	{
+		cout<<team[i]<<";";
+	}
+	cout<<endl;
+	for (int i = 0; i <locations.size(); ++i)
+	{
+		cout<<locations[i].returnFirst()<<","<<locations[i].returnSecond()<<";";
+	}
+	cout<<endl;
+	//debug code
+
+	//debug code
 	string strstate;
 	if(state == idle){strstate = "idle";}
 	if(state == traveling){strstate = "traveling";}
@@ -267,6 +277,19 @@ void stepCallback(const ses::step::ConstPtr& step_msg){
 		vector<pathCell*> path = al->allocate(c->getLocation(),robot_id);
 		if(path.size()==1){
 			path = al->areaCoverage(c->getLocation(),robot_id);
+			/*if(path.size() == 0){
+				path = al->allocateNextArea(c-> getLocation(), robot_id);
+				if(path.size()==0){//no more areas
+					cout<<robot_id<<" befor share"<<endl;
+					if(share(robot_id)){cout<<robot_id<<" shared"<<endl;return;}
+					publishPath(robot_id,done,path);
+					states[robot_id] = done;
+					al->unAssign(robot_id);
+					cout<<"done!"<<endl;
+					checkStates();
+					return;
+				}
+			}*/
 			publishPath(robot_id,covering,path);
 			return;
 		}
@@ -276,8 +299,10 @@ void stepCallback(const ses::step::ConstPtr& step_msg){
 	if(step_msg->is_the_last){//the robot finished his path
 		if(state == traveling){//the robot found his area
 			vector<pathCell*> path = al->areaCoverage(c->getLocation(),robot_id);
+			cout<<"cov path!"<<path.size()<<endl;
 			if(path.size() == 0){//area of one cell
 				path = al->allocateNextArea(c-> getLocation(), robot_id);
+				cout<<"cov path-> new!"<<path.size()<<endl;
 				if(path.size()==0){//no more areas
 					cout<<robot_id<<" befor share"<<endl;
 					if(share(robot_id)){cout<<robot_id<<" shared"<<endl;return;}
@@ -296,6 +321,7 @@ void stepCallback(const ses::step::ConstPtr& step_msg){
 		}
 		if(state == covering){//the robot finished to cover his area
 			vector<pathCell*> path = al->allocateNextArea(c-> getLocation(), robot_id);
+			cout<<"path to new area!"<<path.size()<<endl;
 			if(path.size() == 0){
 				if(share(robot_id)){return;}
 				publishPath(robot_id,done,path);
@@ -314,7 +340,7 @@ void stepCallback(const ses::step::ConstPtr& step_msg){
 bool share(int robot){
 	cout<<robot<<" in share"<<endl;
 	
-	for (int i = 0; i < states.size(); ++i)
+	for (int i = 0;robot!=i && i < states.size(); ++i)
 	{
 			vector<myTuple> sublocations(2,myTuple(-1,-1));
 			sublocations[1] = locations[robot];//helper
@@ -340,30 +366,6 @@ bool share(int robot){
 			vector<pathCell*> helperPath = al->allocate(locations[robot],robot);
 			publishPath(robot,traveling,helperPath);
 			
-			
-			////debug code
-			//cout<<"otherPath: "<<endl<<"size: " <<otherPath.size()<<endl;
-			//for (int j = 0; j < otherPath.size(); ++j)
-			//{	
-			//	cout << otherPath[j]->getLocation().returnFirst();
-			//	cout<<";";
-			//	cout << otherPath[j]->getLocation().returnSecond();
-			//	if (i!= otherPath.size() -1) {
-			//		cout<< " ";
-			//	}
-			//}
-
-			//cout<<"helperPath: "<<endl<<"size: " <<helperPath.size()<<endl;
-			//for (int j = 0; j < helperPath.size(); ++j)
-			//{	
-			//	cout << helperPath[j]->getLocation().returnFirst();
-			//	cout<<";";
-			//	cout << helperPath[j]->getLocation().returnSecond();
-			//	if (i!= helperPath.size() -1) {
-			//		cout<< " ";
-			//	}
-			//}
-
 			//debug code
 			return true;	
 		}

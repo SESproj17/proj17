@@ -18,7 +18,6 @@ private:
 	vector<subArea*> dfs(area* graph,int rows,int cols);
 public:
 	vector<area*> make_areas(float jump,float limit);
-	//vector<subArea*> getConnectedAreas(vector<area*> areas);
 	vector<vector<subArea*> > getConnectedAreas(vector<area*> areas);
 };
 
