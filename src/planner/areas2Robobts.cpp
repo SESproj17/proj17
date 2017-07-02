@@ -15,9 +15,9 @@ areas2Robobts::areas2Robobts(){
     	vc[i]->print();
     }
     areas = al->getConnectedAreas(vc);
-    for (int i = 0; i < areas.size(); ++i) {
-    	cout << "areas2Robobts::areas2Robobts " << areas[i].size() << endl;
-    }
+    //for (int i = 0; i < areas.size(); ++i) {
+    //	cout << "areas2Robobts::areas2Robobts " << areas[i].size() << endl;
+    //}
 }
 
 subArea* areas2Robobts::lookForNewArea(myTuple location){
@@ -82,7 +82,7 @@ vector<subArea*> areas2Robobts::statrAllocation(vector<myTuple> teamStartLocatio
 vector<subArea*> areas2Robobts::sortedAvailableAreasPerLocation(myTuple location, AreaState askedState){
 	vector<costedArea*> costedAreas;
 	vector<subArea*> safests = getSafeAreas();
-	cout<<"safests"<<safests.size();
+	//cout<<"safests"<<safests.size();
 	for(int j = 0;j < safests.size();j++){
 		subArea* area = safests[j];
 		if(area->getState() == askedState){
@@ -95,7 +95,7 @@ vector<subArea*> areas2Robobts::sortedAvailableAreasPerLocation(myTuple location
 	{
 		sortedAreas.push_back(costedAreas[i]->getArea());
 	}
-	cout<<"sortedAvailableAreasPerLocation"<<sortedAreas.size();
+	//cout<<"sortedAvailableAreasPerLocation"<<sortedAreas.size();
 	return sortedAreas;
 }
 

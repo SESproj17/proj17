@@ -9,7 +9,7 @@
 
 using namespace std; 
 
-enum robotState {idle,traveling,covering,done,dead};
+enum robotState {idle,traveling,covering,done,dead,deadlock};
 
 // The class holds information about the robot
 class robot 

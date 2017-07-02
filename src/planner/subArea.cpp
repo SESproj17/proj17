@@ -74,19 +74,19 @@ vector<subArea*> subArea::getInheritance(){
                 //
 
                 //debug code
-                connectedArea->print();
-                cout<<endl;
+                //connectedArea->print();
+                //cout<<endl;
                 //debug code
             }    
     }
-    cout<<"dfs: num of areas at the inheritance: "<<connectedList.size()<<endl;
+    //cout<<"dfs: num of areas at the inheritance: "<<connectedList.size()<<endl;
     return connectedList;
 }
 
 vector<pathCell*> subArea::dfs(pathCell* start){
     vector<bool> dfsLocalVisited(cells.size(), false);
-    cout<<"dfs:cells.size() "<<cells.size()<<endl;
-    cout<<"dfs:dfsLocalVisited.size() "<<dfsLocalVisited.size()<<endl;
+    //cout<<"dfs:cells.size() "<<cells.size()<<endl;
+    //cout<<"dfs:dfsLocalVisited.size() "<<dfsLocalVisited.size()<<endl;
     splitBetweenRobots* sbr = new splitBetweenRobots();
     vector<pathCell*> connectedSubGraph;
     stack<pathCell*> stack;
@@ -100,7 +100,7 @@ vector<pathCell*> subArea::dfs(pathCell* start){
         if(s->getState() == NotVisited && !dfsLocalVisited[index]){
             cout<<index<<endl;
             connectedSubGraph.push_back(s);
-            cout<<"dfs:connectedSubGraph.size() "<<connectedSubGraph.size()<<endl;
+            //cout<<"dfs:connectedSubGraph.size() "<<connectedSubGraph.size()<<endl;
 
             dfsLocalVisited[index] = true;
             vector<pathCell*>neib = s->getNeighbors();

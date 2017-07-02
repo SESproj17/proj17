@@ -4,7 +4,7 @@
 moveRobot::moveRobot(int firstStart, int secondStart, int givenrobot_id, string givenLizi){
 	canMove = false; //Is there a path where the robot can go
 	canMoveObst = true;
-	//exit(1);
+	inDeadLock = false;
 	float width, height,lengthX,lengthY;
 	ros::NodeHandle  nh;
 	this->lizi = givenLizi;
@@ -65,7 +65,6 @@ void moveRobot::scanCallback(const sensor_msgs::LaserScan::ConstPtr& scan)
 			geometry_msgs::Twist stopCommand;
 			stopCommand.linear.x = 0;
 			publisher.publish(stopCommand);
-			//cout << i << endl;
 		}
         canMoveObst = false;
         ros::spinOnce();
@@ -74,11 +73,11 @@ void moveRobot::scanCallback(const sensor_msgs::LaserScan::ConstPtr& scan)
     }
 }
 
+
 //Read and process new Path messages	
 void moveRobot::pathCallback(const ses::Path::ConstPtr& path_msg){
 	
 	if(robot_id == path_msg->robot_id){
-		cout<<"moveRobot::"<<robot_id<<" path: "<<path_msg->path<<endl;
 		me->setState((robotState)path_msg->state);
 		me->setPath(path_msg->path);
 		me->setProbs(path_msg->probs);
@@ -87,7 +86,6 @@ void moveRobot::pathCallback(const ses::Path::ConstPtr& path_msg){
 		}
 	}
 }
-
 
 void moveRobot::publishStep(){
 	
@@ -113,35 +111,15 @@ void moveRobot::start(){
 		ros::spinOnce();
 
 		if(canMove && canMoveObst){
-			
-			// //debug code
-			// if (me->getLocation()->returnFirst() == 0 && me->getLocation()->returnSecond() == 0 && lizi == "2") {
-			// 	ROS_INFO("DIE IN HERE!");
-			// 	exit(1);
-			// }
-			//debug code
 			vector<myTuple*> path = me->getPath();
 			int size = path.size();
-			//if(size == 1){cout<<"moveRobot:problemmm of shorted path? "<<me->getLocation()->returnFirst()<<","<<me->getLocation()->returnSecond()<<endl;}
-			//ROS_INFO("DONT DIE!");
-			cout <<"lizi_" <<lizi << " with path size " << size << endl;
 			int x = (path[0]->returnFirst() == me->getLocation()->returnFirst());
 			int y = (path[0]->returnSecond()== me->getLocation()->returnSecond());
 			
 			if(size>1 && path[0]->returnFirst()== me->getLocation()->returnFirst() && path[0]->returnSecond()== me->getLocation()->returnSecond()){
 				me->move();
-				//cout<<"before movment@"<<endl;
 				moveToNext(path[0], path[1]);
-				//cout<<"after movement@"<<endl;
 				publishStep();
-				if(!me->imAlive()){
-					ROS_INFO("Robot %d died ", robot_id);
-					exit(0);
-				}
-				/*if(me->getProb() == 0.4 && me->getState() == covering){
-					ROS_INFO("Robot %d died ", robot_id);
-					exit(0);
-				}*/
 				ros::spinOnce();
 			}else{
 				canMove = false;
@@ -164,9 +142,6 @@ void moveRobot::stepLeftRight(Direction d) {
 	getPose();
 	int dir = 1;
 	float goal;
-
-	//cout << "moveRobot::stepUpDown dx " << me->getLocation()->returnSecond()*DXHorizontal << endl;
-	//cout << "moveRobot::stepUpDown startPoseX " << currentLocationX << endl;
 	goal = cellsCordinate[me->getLocation()->returnFirst()][me->getLocation()->returnSecond()]->returnSecond();
 	float speed = 0.6;
 
@@ -175,26 +150,15 @@ void moveRobot::stepLeftRight(Direction d) {
 	rotateCommand.linear.x = dir*speed;
 	// How fast will we update the robot's movement
 	ros::Rate rate(50);
-	//debig code
-	//cout << "moveRobot::goal " << goal << endl;
-	//cout << "moveRobot::stepUpDown currentLocationY " << currentLocationX << endl;
-	//cout << "moveRobot::stepUpDown tolarence " << abs(currentLocationX - goal) << endl;
-	//debug code
 	// Rotate until the robot reaches the target angle
 	while (ros::ok() && abs(currentLocationX - goal) > placeTol * 80 && canMoveObst) {
 		ros::spinOnce();
-		//cout << "moveRobot::stepUpDown currentLocationY " << currentLocationX << endl;
 		publisher.publish(rotateCommand);
 		rate.sleep();
 		getPose();
 	}
 
-	////debug code
-	//cout << "Angle refinement #1_UPDOWN" << endl;
-	////debug code
-
 	// Slow the speed near the target
-	//rotateCommand.angular.z = turnLeft ? 0.1 * angularSpeed : -0.1 * angularSpeed;
 	rotateCommand.linear.x = dir*speed*0.5;
 
 	while (ros::ok() && abs(currentLocationX - goal) > placeTol * 50 && canMoveObst) {		
@@ -202,12 +166,7 @@ void moveRobot::stepLeftRight(Direction d) {
 		publisher.publish(rotateCommand);
 		rate.sleep();
 		getPose();
-
-		
 	}
-	////debug code
-	//cout << "Angle refinement #2_UPDOWN" << endl;
-
 	rotateCommand.linear.x = dir*speed*0.35;
 
 	while (ros::ok() && abs(currentLocationX - goal) > placeTol * 20 && canMoveObst) {		
@@ -215,48 +174,30 @@ void moveRobot::stepLeftRight(Direction d) {
 		publisher.publish(rotateCommand);
 		rate.sleep();
 		getPose();
-
-		
 	}
-	////debug code
-	//cout << "Angle refinement #2.5_UPDOWN" << endl;
 
 	// Further refine the angle
-	//rotateCommand.angular.z = turnLeft ? 0.05 * angularSpeed : -0.05 * angularSpeed;
 	rotateCommand.linear.x = 0.2*dir*speed;
 	while (ros::ok() && abs(currentLocationX - goal) > placeTol*10 && canMoveObst) {
 		ros::spinOnce();
-		//cout << "moveRobot::stepUpDown currentLocationY " << currentLocationY << endl;
 		publisher.publish(rotateCommand);
 		rate.sleep();
 		getPose();
-
-
 	}
 
 	rotateCommand.linear.x = 0.1*dir*speed;
 	while (ros::ok() && abs(currentLocationX - goal) > placeTol*3 && canMoveObst) {
 		ros::spinOnce();
-		//cout << "moveRobot::stepUpDown currentLocationY " << currentLocationY << endl;
 		publisher.publish(rotateCommand);
 		rate.sleep();
 		getPose();
-
-
 	}
-	////debug code
-	//cout << "Angle refinement #3_UPDOWN" << endl;
-	////debug code
-
-
 	for (int i = 0; i < 20; i++) {
 		geometry_msgs::Twist stopCommand;
 		stopCommand.linear.x = 0;
 		publisher.publish(stopCommand);
-		//cout << i << endl;
 	}
 	if (!canMoveObst) {stepLeftRight(d); }
-	//cout << "Angle refinement #4_UPDOWN" << endl;	
 }
 
 
@@ -268,8 +209,6 @@ void moveRobot::stepUpDown(Direction d) {
 	float goal = 0;
 	bool isUp = true;
 	if (d == UP) {
-		//cout << "moveRobot::stepUpDown dx " << me->getLocation()->returnFirst()*DX*(-1)*dir << endl;
-		//cout << "moveRobot::" << lizi << "::" << "stepUpDown startPoseY " << startPoseY << endl;		
 	}
 
 	goal = cellsCordinate[me->getLocation()->returnFirst()][me->getLocation()->returnSecond()]->returnFirst();
@@ -281,29 +220,18 @@ void moveRobot::stepUpDown(Direction d) {
 	rotateCommand.linear.x = dir*speed;
 	// How fast will we update the robot's movement
 	ros::Rate rate(50);
-	 //cout << "moveRobot::goal " << lizi << ":: " << goal << endl;
-	 //cout << "DXX" << DX << endl;
-	 //cout << "moveRobot::stepUpDown currentLocationY " << lizi << ":: " <<  currentLocationY << endl;
-	// cout << "moveRobot::stepUpDown tolarence " << abs(currentLocationY - goal) << endl;
 	// Rotate until the robot reaches the target angle
 	while (ros::ok() && abs(currentLocationY - goal) > placeTol * 80 && canMoveObst) {
-		//cout << "moveRobot::stepUpDown currentLocationY " << lizi << " " << currentLocationY << endl;	
 		ros::spinOnce();
 		publisher.publish(rotateCommand);
 		rate.sleep();
 		getPose();
 	}
 
-	////debug code
-	//cout << "Angle refinement #1_UPDOWN" << endl;
-	////debug code
-
 	// Slow the speed near the target
-	//rotateCommand.angular.z = turnLeft ? 0.1 * angularSpeed : -0.1 * angularSpeed;
 	rotateCommand.linear.x = dir*speed*0.5;
 
 	while (ros::ok() && abs(currentLocationY - goal) > placeTol * 50 && canMoveObst) {		
-		//cout << "moveRobot::stepUpDown currentLocationY " << lizi << " " << currentLocationY << endl;	
 		ros::spinOnce();
 		publisher.publish(rotateCommand);
 		rate.sleep();
@@ -311,13 +239,9 @@ void moveRobot::stepUpDown(Direction d) {
 
 		
 	}
-	////debug code
-	//cout << "Angle refinement #2_UPDOWN" << endl;
-
 	rotateCommand.linear.x = dir*speed*0.3;
 
 	while (ros::ok() && abs(currentLocationY - goal) > placeTol * 20 && canMoveObst) {
-		//cout << "moveRobot::stepUpDown currentLocationY " << lizi << " " << currentLocationY << endl;			
 		ros::spinOnce();
 		publisher.publish(rotateCommand);
 		rate.sleep();
@@ -325,15 +249,9 @@ void moveRobot::stepUpDown(Direction d) {
 
 		
 	}
-	////debug code
-	//cout << "Angle refinement #2.5_UPDOWN" << endl;
-
 	// Further refine the angle
-	//rotateCommand.angular.z = turnLeft ? 0.05 * angularSpeed : -0.05 * angularSpeed;
 	rotateCommand.linear.x = 0.2*dir*speed;
 	while (ros::ok() && abs(currentLocationY - goal) > placeTol*10 && canMoveObst) {
-		//cout << "moveRobot::stepUpDown currentLocationY " << currentLocationY << endl;
-		//cout << "moveRobot::stepUpDown currentLocationY " << lizi << " " << currentLocationY << endl;	
 		publisher.publish(rotateCommand);
 		ros::spinOnce();
 		rate.sleep();
@@ -344,8 +262,6 @@ void moveRobot::stepUpDown(Direction d) {
 
 	rotateCommand.linear.x = 0.1*dir*speed;
 	while (ros::ok() && abs(currentLocationY - goal) > placeTol*3 && canMoveObst) {
-		//cout << "moveRobot::stepUpDown currentLocationY " << currentLocationY << endl;
-		//cout << "moveRobot::stepUpDown currentLocationY " << lizi << " " << currentLocationY << endl;	
 		publisher.publish(rotateCommand);
 		ros::spinOnce();
 		rate.sleep();
@@ -353,19 +269,12 @@ void moveRobot::stepUpDown(Direction d) {
 
 
 	}
-	////debug code
-	//cout << "Angle refinement #3_UPDOWN" << endl;
-	////debug code
-
-
 	for (int i = 0; i < 20; i++) {
 		geometry_msgs::Twist stopCommand;
 		stopCommand.linear.x = 0;
 		publisher.publish(stopCommand);
-		//cout << i << endl;
 	}
 	if (!canMoveObst) {stepUpDown(d);}
-	//cout << "Angle refinement #4_UPDOWN" << endl;
 }
 
 
@@ -377,7 +286,6 @@ void moveRobot::getPose() {
 	listener.waitForTransform("/map", "/lizi_"+lizi+"/base_link", ros::Time(0), ros::Duration(10.0) );
 
     try {
-    	//listener.waitForTransform("/map", "/" + robotName + "/base_link", ros::Time(0), ros::Duration(60.0));
         listener.lookupTransform("/map",  "/lizi_"+lizi+"/base_link", ros::Time(0), transform);
         currentLocationX = transform.getOrigin().x();
         currentLocationY = transform.getOrigin().y();
@@ -420,33 +328,17 @@ void moveRobot::getPose() {
 		rate.sleep();
 		getPose();
 	}
-
-	////debug code
-	//cout << "Angle refinement #1" << endl;
-	////debug code
-
-	// Slow the speed near the target
-	//rotateCommand.angular.z = turnLeft ? 0.1 * angularSpeed : -0.1 * angularSpeed;
 	rotateCommand.angular.z = turnLeft ? 0.5 * angularSpeed : -0.5 * angularSpeed;
 
 	while (ros::ok() && abs(currentAngle - targetAngle) > angularTolerance * 10) {
 		// The robot can reach the LEFT direction from negative PI or positive PI
 		if (d == LEFT && (abs(currentAngle - (-M_PI)) <= angularTolerance * 10))
 			break;
-			
-
 		publisher.publish(rotateCommand);
 		rate.sleep();
-		getPose();
-
-		
+		getPose();	
 	}
-	////debug code
-	//cout << "Angle refinement #2" << endl;
-	////debug code
-
 	// Further refine the angle
-	//rotateCommand.angular.z = turnLeft ? 0.05 * angularSpeed : -0.05 * angularSpeed;
 	while (ros::ok() && abs(currentAngle - targetAngle) > angularTolerance) {
 		// The robot can reach the LEFT direction from negative PI or positive PI
 		if (d == LEFT && (abs(currentAngle - (-M_PI)) <= angularTolerance))
@@ -459,11 +351,6 @@ void moveRobot::getPose() {
 
 
 	}
-	////debug code
-	//cout << "Angle refinement #3" << endl;
-	////debug code
-
-
 	for (int i = 0; i < 20; i++) {
 		geometry_msgs::Twist stopCommand;
 		stopCommand.angular.z = 0;
@@ -471,7 +358,6 @@ void moveRobot::getPose() {
 	}
 	
 }
-
 
  void moveRobot::moveToNext(myTuple* location, myTuple* nextLocation){
  	Direction d;
@@ -484,9 +370,6 @@ void moveRobot::getPose() {
 	} else if (location->returnFirst() < nextLocation->returnFirst() && location->returnSecond() == nextLocation->returnSecond()) {
 		d = DOWN;						
 	}
-	////debug code
-	//cout << "DIR " << d <<endl;
-	////debug code
 	rotate(d);
 	step(d);
 

@@ -86,10 +86,12 @@ void robot::move(){
 
 //flip coin and check if the robot that move on this cell died or not.
 bool robot::imAlive() {
+
 	srand(time(NULL));
 	int x;float y;
 	x = rand()%11;
-	y = float(x)/10 + 1;
+	y = float(x)/10;
+	//cout<<"y: "<<y<<"probs[0]: "<<probs[0]<<endl;
 	//y = y*40;
 	if (y > probs[0]) {return true;}
 	this->state = dead;

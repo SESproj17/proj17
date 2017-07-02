@@ -15,7 +15,7 @@ using namespace std;
 
 #define MAX_ROBOTS_NUM 20
 
-enum robotState {idle,traveling,covering,done,dead};
+enum robotState {idle,traveling,covering,done,dead,deadlock};
 
 int teamSize;
 unsigned int robotsCount = 0;
@@ -26,6 +26,8 @@ vector<robotState> states;
 allocation* al;
 bool started = false;//The coverage started
 bool end = false;//Coverage should be stopped or completed successfully
+vector<bool> deadlocks(2, -1);//robots at deadlock
+
 
 //team_status topic
 ros::Subscriber team_status_sub;
@@ -37,7 +39,10 @@ ros::Subscriber steps_sub;
 //Publisher to paths topic
 ros::Publisher path_pub;
 
-
+void solveDeadlock(int id);
+void coveringPath(int robot_id);
+void travelingPath(int robot_id);
+void doneCare(int robot_id);
 void bury(int id);
 string path2str(vector<pathCell*> path);
 string probs2str(vector<pathCell*> path);
@@ -174,14 +179,6 @@ void teamStatusCallback(const ses::RobotStatus::ConstPtr& status_msg)
 				{
 					team[i] = i;
 				}
-				
-				//debug code
-				for (int i = 0; i <team.size(); ++i)
-				{
-					cout<<team[i]<<";";
-				}
-				cout<<endl;
-				//debug code
 
 				//Initialization of the allocation class for the robots that arrived
 
@@ -231,19 +228,85 @@ void publishPath(int robot_id,robotState state, vector<pathCell*>path){
 	path_pub.publish(path_msg);
 }
 
+void solveDeadlock(int id){
+	if(deadlocks[0]== -1){//only one reported about deadlock
+		deadlocks[0] = id;
+		return;
+	}
+	deadlocks[1] == id;
+	grid* g = grid::getInstance();
+	
+	pathCell* c = g->getCellAt(locations[id].returnFirst(), locations[id].returnSecond());
+	float temp = c->getProb();
+	c->setProb(1);
+	if(states[id] == traveling){
+		travelingPath(id);
+	}
+
+	if(states[id] == covering){
+		coveringPath(id);
+	}
+	deadlocks[0] = -1;
+	deadlocks[1] = -1;
+	c->setProb(temp);	
+}
+
+void travelingPath(int robot_id){
+	vector<pathCell*> path = al->allocateNextArea(locations[robot_id], robot_id);
+	cout<<"monitor::travelingPath:path to new area!"<<path.size()<<endl;
+	if(path.size() == 0){
+		if(share(robot_id)){return;}
+		doneCare(robot_id);
+		return;
+	}
+	publishPath(robot_id,traveling,path);
+	return;
+
+}
+
+void coveringPath(int robot_id){
+	vector<pathCell*> path = al->areaCoverage(locations[robot_id],robot_id);
+	cout<<"monitor::coveringPath path!"<<path.size()<<endl;
+	if(path.size() == 0){//area of one cell
+		travelingPath(robot_id);
+		return;
+	}
+	publishPath(robot_id,covering,path);
+	return;
+
+}
+
+void doneCare(int robot_id){
+	vector<pathCell*> path;
+	publishPath(robot_id,done,path);
+	states[robot_id] = done;
+	al->unAssign(robot_id);
+	//cout<<"doneCare::done!"<<endl;
+	checkStates();
+}
+
 
 //Given the location and state of the robot, the function determines what path the robot must go to, and publishes it
 void stepCallback(const ses::step::ConstPtr& step_msg){
 	int robot_id = step_msg->robot_id;
+	robotState state = (robotState)step_msg->state;
+
+	if(state == deadlock){
+		solveDeadlock(robot_id);
+		return;
+	}
+
 	int x = step_msg->first_location;
 	int y = step_msg->second_location;
 	myTuple m(x,y);
 	locations[robot_id] = m;
-	robotState state = (robotState)step_msg->state;
-	//states[robot_id] = state;
+	
+
+	states[robot_id] = state;
 	cout<<"monitor: "<<robot_id<<"is now at "<<locations[robot_id].returnFirst()<<","<<locations[robot_id].returnSecond()<<endl;
 	grid* g = grid::getInstance();
 	pathCell* c = g->getCellAt(step_msg->first_location, step_msg->second_location);
+
 
 	//debug code
 	cout<<"monitor:stepCallback::step of robot "<<robot_id<<endl;
@@ -276,21 +339,7 @@ void stepCallback(const ses::step::ConstPtr& step_msg){
 	if(state == idle) {
 		vector<pathCell*> path = al->allocate(c->getLocation(),robot_id);
 		if(path.size()==1){
-			path = al->areaCoverage(c->getLocation(),robot_id);
-			/*if(path.size() == 0){
-				path = al->allocateNextArea(c-> getLocation(), robot_id);
-				if(path.size()==0){//no more areas
-					cout<<robot_id<<" befor share"<<endl;
-					if(share(robot_id)){cout<<robot_id<<" shared"<<endl;return;}
-					publishPath(robot_id,done,path);
-					states[robot_id] = done;
-					al->unAssign(robot_id);
-					cout<<"done!"<<endl;
-					checkStates();
-					return;
-				}
-			}*/
-			publishPath(robot_id,covering,path);
+			coveringPath(robot_id);
 			return;
 		}
 		publishPath(robot_id,traveling,path);
@@ -298,40 +347,11 @@ void stepCallback(const ses::step::ConstPtr& step_msg){
 	}	
 	if(step_msg->is_the_last){//the robot finished his path
 		if(state == traveling){//the robot found his area
-			vector<pathCell*> path = al->areaCoverage(c->getLocation(),robot_id);
-			cout<<"cov path!"<<path.size()<<endl;
-			if(path.size() == 0){//area of one cell
-				path = al->allocateNextArea(c-> getLocation(), robot_id);
-				cout<<"cov path-> new!"<<path.size()<<endl;
-				if(path.size()==0){//no more areas
-					cout<<robot_id<<" befor share"<<endl;
-					if(share(robot_id)){cout<<robot_id<<" shared"<<endl;return;}
-					publishPath(robot_id,done,path);
-					states[robot_id] = done;
-					al->unAssign(robot_id);
-					cout<<"done!"<<endl;
-					checkStates();
-					return;
-				}
-				publishPath(robot_id,traveling,path);
-				return;
-			}
-			publishPath(robot_id,covering,path);
+			coveringPath(robot_id);
 			return;
 		}
 		if(state == covering){//the robot finished to cover his area
-			vector<pathCell*> path = al->allocateNextArea(c-> getLocation(), robot_id);
-			cout<<"path to new area!"<<path.size()<<endl;
-			if(path.size() == 0){
-				if(share(robot_id)){return;}
-				publishPath(robot_id,done,path);
-				states[robot_id] = done;
-				al->unAssign(robot_id);
-				cout<<"done!"<<endl;
-				checkStates();
-				return;
-			}
-			publishPath(robot_id,traveling,path);
+			travelingPath(robot_id);
 			return;
 		}
 	}
@@ -365,8 +385,6 @@ bool share(int robot){
 			//helper
 			vector<pathCell*> helperPath = al->allocate(locations[robot],robot);
 			publishPath(robot,traveling,helperPath);
-			
-			//debug code
 			return true;	
 		}
 	}
@@ -384,10 +402,30 @@ void checkStates(){
 		}
 	}
 	grid* g = grid::getInstance();
+	cout<<endl;
+	cout<<endl;
+	cout<<endl;
+	cout<<endl;
+	cout<<endl;
+	cout<<endl;
+	cout<<endl;
+	cout<<endl;
+	cout<<endl;
+	cout<<endl;
+	cout<<endl;
+	cout<<endl;
+	cout<<endl;
+	cout<<endl;
+	cout<<endl;
+	cout<<endl;
+	cout<<endl;
+	cout<<endl;
+	cout<<endl;
     g->print();
 	cout<<"Coverage End!"<<endl;
 
 	alarm(0);
+
 	//publish a message to all robots that they can close themselfs
 	ses::RobotStatus status_msg;
 	status_msg.header.stamp = ros::Time::now();

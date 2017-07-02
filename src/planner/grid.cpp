@@ -221,12 +221,13 @@ void grid::reduceMap() {
        }
         cout << endl;
     }
-    cout << " ROWSSSSSS " << rows << " COLSSSS " << cols << endl;
+    //cout << " ROWSSSSSS " << rows << " COLSSSS " << cols << endl;
 }
 
 void grid::print() {
     for (int i = 0; i < this->rows; ++i) {
         for (int j = 0; j < this->cols; ++j) {
+            
             if (cells[i][j]->getState() == Visited) {
                 cout << "X";
             } else {

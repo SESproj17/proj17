@@ -18,14 +18,14 @@ void allocation::assign(subArea* area, int robot){
 	if(area->getState() != NotAssigned){ exit(1);}
 	//if(NULL != assignment[robot]){cout<<"assign: problem assign to busy robot->EXIT"<<endl; exit(1);}
 	assignment[robot] = area;
-	cout<<"robot "<<robot<<endl;
-	assignment[robot]->print();
+	//cout<<"area aggirobot "<<robot<<endl;
+	//assignment[robot]->print();
 	area->changeState(Assigned);
 }
 
 //Taking care of a case where a robot died. Makes sure that the area to which it was allocated is marked as unAssigned
 void allocation::unAssign(int robot){
-	cout<<"unAssign robot "<<robot<<endl;
+	//cout<<"unAssign robot "<<robot<<endl;
 	if(team[robot] == skeleton){cout<<"unAssign: robot "<<robot<<" died yesterday!"<<endl;exit(1);}
 	subArea* area = assignment[robot];
 	if(area-> getState() == NotAssigned){cout<<"unAssign: problem area is not Assigned->EXIT"<<endl; exit(1);}
@@ -91,17 +91,17 @@ the number of unvisited cells in that area, then there is no point of
 sending the robot there,
 */ 
 bool allocation::isPoint(vector<myTuple>locations, int helper, int other){
-	cout<<"helper "<<helper<<" other "<<other<<endl;
+	//cout<<"helper "<<helper<<" other "<<other<<endl;
 	subArea* a = assignment[other];
 	safestPath sp(a->getCells());
 	vector<pathCell*> way = sp.find(locations[1])->getPath();
-	cout<<"a->getLeftCells()"<<a->getLeftCells()<<"   way.size() "<<way.size()<<endl;
+	//cout<<"a->getLeftCells()"<<a->getLeftCells()<<"   way.size() "<<way.size()<<endl;
 	//if(a->getLeftCells()> way.size())
 	int x = a->getLeftCells()-way.size();
-	cout<<x<<" "<<(x>1)<<endl; 
+	//cout<<x<<" "<<(x>1)<<endl; 
 	if(x>1)
 	{
-		cout<<"isPoint!"<<endl;
+		//cout<<"isPoint!"<<endl;
 		splitBetweenRobots sbr(a, locations);
 		vector<subArea*> splited = sbr.split();
 		a2r->addSplited(a,splited);
@@ -109,6 +109,6 @@ bool allocation::isPoint(vector<myTuple>locations, int helper, int other){
 		assign(splited[0], other);
 		return true;
 	}
-	cout<<"is no Point"<<endl;
+	//cout<<"is no Point"<<endl;
 	return false;
 }

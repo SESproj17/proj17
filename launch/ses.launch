@@ -26,19 +26,20 @@
 
 	<env name="GAZEBO_MODEL_PATH" value="$(find ses)/models:$(find ses)/models/ar_markers:$(optenv GAZEBO_MODEL_PATH)"/>
 	<env name="GAZEBO_RESOURCE_PATH" value="$(find ses):$(optenv GAZEBO_MODEL_PATH)"/>
+        <include file="$(find ric_gazebo)/launch/lizi_gazebo.launch"/>
 
 
 	<node name="tf" pkg="tf" type="static_transform_publisher" args="22.248449 21.017353 0.039000 0 0.000002 0 /map /lizi_1/diff_driver/odometry 100" />
 	<node name="Robot_0" pkg="ses" type="robot" args="1 0 0" output="screen"/> 
-<!--
+
 	<node name="tf2" pkg="tf" type="static_transform_publisher" args="27.121142 21.011111 0.039000 0 0.000002 0 /map /lizi_2/diff_driver/odometry 100" />
 	<node name="Robot_1" pkg="ses" type="robot" args="2 0 9" output="screen"/>
--->
-<!--	<node name="tf3" pkg="tf" type="static_transform_publisher" args="4.774928 16.799536 0.038998 0 0.000002 0 /map /lizi_3/diff_driver/odometry 100" />
-	<node name="Robot_3" pkg="ses" type="robot" args="3 2 0" output="screen"/>
--->
-        <include file="$(find ric_gazebo)/launch/lizi_gazebo.launch"/>
 
-  	<node name="monitor" pkg="ses" type="monitor" output="screen"/> 
+	<node name="tf3" pkg="tf" type="static_transform_publisher" args="4.774928 16.799536 0.038998 0 0.000002 0 /map /lizi_3/diff_driver/odometry 100" />
+	<node name="Robot_3" pkg="ses" type="robot" args="3 2 0" output="screen"/>
+
+
+
+  	<node name="monitor" pkg="ses" type="monitor" output="screen"/>
 	
 </launch>

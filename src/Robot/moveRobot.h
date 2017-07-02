@@ -44,6 +44,8 @@ private:
 	robot* me;
 	bool canMove;
 	bool canMoveObst;
+	bool inDeadLock;
+	time_t timeStart;
 	int robot_id;
 
 	double currentLocationX;
@@ -67,6 +69,7 @@ private:
 	void pathCallback(const ses::Path::ConstPtr& path_msg);
 	void scanCallback(const sensor_msgs::LaserScan::ConstPtr& scan);
 	void publishStep();
+	void publishDeadlock();
 	void getPose();
 	void rotate(Direction d);
 	void step(Direction d);

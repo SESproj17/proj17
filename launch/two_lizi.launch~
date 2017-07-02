@@ -1,7 +1,7 @@
 <launch>
         <param name="/use_sim_time" value="true" />
         <param name="min_cost" value="0.1" />
-        <param name="max_cost" value="0.4" />
+        <param name="max_cost" value="0.2" />
         <param name="jump_cost" value="0.1" />
         <param name="group_size" value="2" />
 
@@ -11,8 +11,8 @@
         <param name="lengthX" value="10" />
         <param name="lengthY" value="10" />
 
-        <param name="startX" value="5.186263" />
-        <param name="startY" value="21.127271" />
+        <param name="startX" value="5.544997" />
+        <param name="startY" value="20.291885" />
 
 
 	<arg name="map_file" default="$(find ses)/world/labs.yaml"/>
@@ -29,12 +29,12 @@
 	<env name="GAZEBO_RESOURCE_PATH" value="$(find ses):$(optenv GAZEBO_MODEL_PATH)"/>
 
 
-	<node name="tf" pkg="tf" type="static_transform_publisher" args="5.186263 21.242503 0.039000 0 0.000002 0 /map /lizi_1/diff_driver/odometry 100" />
+	<node name="tf" pkg="tf" type="static_transform_publisher" args="5.544997 20.291885 0.039000 0 0.000002 0 /map /lizi_1/diff_driver/odometry 100" />
 	<node name="Robot_0" pkg="ses" type="robot" args="1 0 0" output="screen"/> 
 
 
-	<node name="tf2" pkg="tf" type="static_transform_publisher" args="27.121259 21.223881 0.038998 0 0.000002 0 /map /lizi_2/diff_driver/odometry 100" />
-	<node name="Robot_1" pkg="ses" type="robot" args="2 0 9" output="screen"/> 
+	<node name="tf2" pkg="tf" type="static_transform_publisher" args="26.781801 20.873102 0.038998 0 0.000002 0 /map /lizi_2/diff_driver/odometry 100" />
+	<node name="Robot_1" pkg="ses" type="robot" args="2 0 7" output="screen"/> 
 
 
 

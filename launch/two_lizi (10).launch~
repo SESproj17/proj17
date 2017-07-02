@@ -1,0 +1,46 @@
+<launch>
+        <param name="/use_sim_time" value="true" />
+        <param name="min_cost" value="0.1" />
+        <param name="max_cost" value="0.4" />
+        <param name="jump_cost" value="0.1" />
+        <param name="group_size" value="2" />
+
+        <param name="width" value="22.884324" />
+        <param name="height" value="18.159845" />
+
+        <param name="lengthX" value="10" />
+        <param name="lengthY" value="10" />
+
+        <param name="startX" value="4.606146" />
+        <param name="startY" value="20.881862" />
+
+
+	<arg name="map_file" default="$(find ses)/world/labs.yaml"/>
+
+
+	<node name="map_server_real" pkg="map_server" type="map_server" args="$(arg map_file)">
+		<remap from="map" to="threat_map"/>
+		<remap from="map_metadata" to="threat_map_metadata"/>
+	</node>
+
+	<node name="map_server" pkg="map_server" type="map_server" args="$(find ses)/world/lab_map.yaml"/>
+
+	<env name="GAZEBO_MODEL_PATH" value="$(find ses)/models:$(find ses)/models/ar_markers:$(optenv GAZEBO_MODEL_PATH)"/>
+	<env name="GAZEBO_RESOURCE_PATH" value="$(find ses):$(optenv GAZEBO_MODEL_PATH)"/>
+
+
+	<node name="tf" pkg="tf" type="static_transform_publisher" args="14.851114 20.843140 0.039000 0 0.000002 0 /map /lizi_1/diff_driver/odometry 100" />
+	<node name="Robot_0" pkg="ses" type="robot" args="1 0 4" output="screen"/> 
+
+
+	<node name="tf2" pkg="tf" type="static_transform_publisher" args="27.207225 20.746802 0.038998 0 0.000002 0 /map /lizi_2/diff_driver/odometry 100" />
+	<node name="Robot_1" pkg="ses" type="robot" args="2 0 9" output="screen"/> 
+
+
+
+
+        <include file="$(find ric_gazebo)/launch/lizi_gazebo.launch"/>
+
+  	<node name="monitor" pkg="ses" type="monitor" output="screen"/> 
+	
+</launch>
